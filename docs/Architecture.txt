@@ -1,0 +1,38 @@
+1.	MarketData
+Members:
+1)	String Product
+2)	DateTime start
+3)	DateTime end
+4)	Float BidOpen, BidHigh, BidLow, BidClose, AskOpen, AskHigh, AskLow, AskClose, Vol
+
+2.	Class MarketDataPusher
+Members:
+1)	- String Product
+2)	- DateTime curr
+3)	- Int timeframe
+4)	- DateTime start
+5)	- DateTime end
+6)	- ArrayList subscriber
+
+Methods:
+1)	getNextMarketData(): MarketData
+2)	MarketDataPusher(String Product, DateTime start, DateTime end, int timeframe): MarketDataPuhser
+3)	Attach(subscriber)
+
+3.	Indicator
+Methods:
+1)	Static function
+
+4.	Strategy
+Memebers:
+1)	ArrayList <MarketData> marketData
+
+Methods:
+1)	Notify()
+
+5.	OrderExecutor
+Methods: 
+1)	Execute(Order)
+
+6.	Order
+Members:

@@ -1,0 +1,16 @@
+1. download windows git from
+http://code.google.com/p/msysgit/
+2. launch "Git Bash", run
+git config --global user.name "Your name here"
+git config --global user.email "Your email here"
+3. fork git repository
+git clone https://github.com/shenzhongqiang/exp.git
+4. install egit in eclipse
+1) open Help > Install New Software, add below site in "Work With"
+http://download.eclipse.org/egit/updates
+download egit
+2) open Preferences > Team > Git > Configuration, check if user.name and user.email is the same as above
+5. create system environment variable
+HOME=%USERPROFILE%
+6. in eclipse, open or create a project, right click on the project and select Team
+the most frequently used function is commit, push to upstream
