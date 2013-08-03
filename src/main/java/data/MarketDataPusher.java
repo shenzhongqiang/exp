@@ -1,9 +1,14 @@
+package data;
+
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import au.com.bytecode.opencsv.CSVReader;
+import strategy.Strategy;
+import subscriber.*;
 
 public class MarketDataPusher {
 	private String product;
@@ -11,8 +16,9 @@ public class MarketDataPusher {
 	private int timeframe;
 	private Date start;
 	private Date end;
-	private ArrayList<Strategy> subscribers;
-	private ArrayList<MarketData> buffer;
+	private ArrayList<Subscriber> subscribers;
+	private ArrayList<MarketData> bidBuffer;
+	private ArrayList<MarketData> askBuffer;
 	
 	public MarketDataPusher(String product, int timeframe, 
 			String start, String end) {
@@ -40,26 +46,30 @@ public class MarketDataPusher {
 		
 		TreeMap<Date, String> tm = getDateFileMap();
 		Set<Date> dates = tm.keySet();
-		this.buffer = new ArrayList<MarketData>();
+		this.askBuffer = new ArrayList<MarketData>();
+		this.bidBuffer = new ArrayList<MarketData>();
 		for(Date date: dates) {
 			String filePath = tm.get(date); 
 			
 			if(date.compareTo(this.start) >= 0 && date.compareTo(this.end) <= 0) {
-				ArrayList<MarketData> md = readMarketData(product, filePath);
-				this.buffer.addAll(md);
+				HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, filePath);
+				this.askBuffer.addAll(hm.get("ask"));
+				this.bidBuffer.addAll(hm.get("bid"));
 			}	
 			
 		}
 		
-		this.subscribers = new ArrayList<Strategy>();
+		this.subscribers = new ArrayList<Subscriber>();
 		curr = 0;
 	}
 	
 	public boolean Notify() {
-		if(curr < this.buffer.size()) {
-			MarketData md = this.buffer.get(curr);
-			for(Strategy s: this.subscribers) {
-				s.Update(md);
+		if(curr < this.bidBuffer.size()) {
+			MarketData bid = this.bidBuffer.get(curr);
+			MarketData ask = this.askBuffer.get(curr);
+			
+			for(Subscriber s: this.subscribers) {
+				s.Update(product, bid, ask);
 			}
 			
 			curr++;
@@ -69,7 +79,7 @@ public class MarketDataPusher {
 		return false;
 	}
 	
-	public void Attach(Strategy o) {
+	public void Attach(Subscriber o) {
 		this.subscribers.add(o);
 	}
 	
@@ -77,7 +87,7 @@ public class MarketDataPusher {
 		this.subscribers.remove(o);
 	}
 	
-	private static ArrayList<MarketData> readMarketData(String product, String filePath) {
+	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, String filePath) {
 		String pattern = "(\\d{4}-\\d{2}-\\d{2})";
 		Pattern r = Pattern.compile(pattern);
 		Matcher m = r.matcher(filePath);
@@ -87,35 +97,37 @@ public class MarketDataPusher {
 			date = m.group(1);
 		}
 		
-		ArrayList<MarketData> al = new ArrayList<MarketData>();
+		ArrayList<MarketData> bids = new ArrayList<MarketData>();
+		ArrayList<MarketData> asks = new ArrayList<MarketData>();
 		try {
-			FileReader fr = new FileReader(filePath);
-			BufferedReader br = new BufferedReader(fr);
-			String line;
+			CSVReader reader = new CSVReader(new FileReader(filePath));
+			String[] parts;
 			
-			while((line = br.readLine()) != null) {
-				String[] parts = line.split(",");
-				
-				for(int i = 0; i < parts.length; i++) {
-					parts[i] = parts[i].replaceAll("^\"|\"$", "");
-				}
+			while((parts = reader.readNext()) != null) {
 				String start = date + " " + parts[0];
 				String end = date + " " + parts[1];
 				
-				MarketData md = new MarketData(product, start, end, 
-						Float.parseFloat(parts[2]), 
-						Float.parseFloat(parts[3]), 
-						Float.parseFloat(parts[4]), 
-						Float.parseFloat(parts[5]), 
-						Float.parseFloat(parts[6]), 
-						Float.parseFloat(parts[7]), 
-						Float.parseFloat(parts[8]), 
-						Float.parseFloat(parts[9]), 
-						Integer.parseInt(parts[10]));
-				al.add(md);
+				double bidOpen = Double.parseDouble(parts[2]);
+				double bidClose = Double.parseDouble(parts[3]);
+				double bidHigh = Double.parseDouble(parts[4]);
+				double bidLow = Double.parseDouble(parts[5]);
+
+				double askOpen = Double.parseDouble(parts[6]);
+				double askClose = Double.parseDouble(parts[7]);
+				double askHigh = Double.parseDouble(parts[8]);
+				double askLow = Double.parseDouble(parts[9]);
+				
+				int volume = Integer.parseInt(parts[10]);
+				MarketData bid = new MarketData(product, start, end, 
+					bidOpen, bidClose, bidHigh, bidLow, volume);
+				MarketData ask = new MarketData(product, start, end, 
+						askOpen, askClose, askHigh, askLow, volume);
+						
+				bids.add(bid);
+				asks.add(ask);
 			}
 			
-			br.close();
+			reader.close();
 			
 		}
 		catch(FileNotFoundException ex) {
@@ -125,7 +137,10 @@ public class MarketDataPusher {
 			System.out.println("Error reading file " + filePath);
 		}
 		
-		return al;
+		HashMap<String, ArrayList<MarketData>> hm = new HashMap<String, ArrayList<MarketData>>();
+		hm.put("ask", asks);
+		hm.put("bid", bids);
+		return hm;
 	}
 	
 	private static TreeMap<Date, String> getDateFileMap() {
@@ -155,5 +170,9 @@ public class MarketDataPusher {
 			}
 		}
 		return tm;
+	}
+	
+	public int getBarNum() {
+		return this.bidBuffer.size();
 	}
 }

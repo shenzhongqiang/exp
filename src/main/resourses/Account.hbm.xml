@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<!DOCTYPE hibernate-mapping 
+ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
+ "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"> 
+
+<hibernate-mapping> 
+
+    <class name="model.Account" table="Account"> 
+
+        <id name="id" column="id" type="integer"> 
+            <generator class="increment"/> 
+        </id> 
+
+        <property name="margin" column="margin" type="double"/> 
+        <property name="floatPl" column="floatPl" type="double"/> 
+		<property name="floatRisk" column="floatRisk" type="double"/>
+		<property name="maxRiskPercent" column="maxRiskPercent" type="double"/> 
+		<property name="dollarPerPoint" column="dollarPerPoint" type="double"/>  
+    </class> 
+
+</hibernate-mapping>

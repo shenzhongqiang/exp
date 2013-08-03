@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resourses"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/opencsv"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/HibernateSQLite"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
