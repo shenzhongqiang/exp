@@ -16,7 +16,8 @@ public class MarketDataPusher {
 	private int timeframe;
 	private Date start;
 	private Date end;
-	private ArrayList<Subscriber> subscribers;
+	private ArrayList<Subscriber> strategies;
+	private ArrayList<Subscriber> orders;
 	private ArrayList<MarketData> bidBuffer;
 	private ArrayList<MarketData> askBuffer;
 	
@@ -59,7 +60,8 @@ public class MarketDataPusher {
 			
 		}
 		
-		this.subscribers = new ArrayList<Subscriber>();
+		this.strategies = new ArrayList<Subscriber>();
+		this.orders = new ArrayList<Subscriber>();
 		curr = 0;
 	}
 	
@@ -68,7 +70,11 @@ public class MarketDataPusher {
 			MarketData bid = this.bidBuffer.get(curr);
 			MarketData ask = this.askBuffer.get(curr);
 			
-			for(Subscriber s: this.subscribers) {
+			for(Subscriber s: this.orders) {
+				s.Update(product, bid, ask);
+			}
+			
+			for(Subscriber s: this.strategies) {
 				s.Update(product, bid, ask);
 			}
 			
@@ -79,12 +85,20 @@ public class MarketDataPusher {
 		return false;
 	}
 	
-	public void Attach(Subscriber o) {
-		this.subscribers.add(o);
+	public void AttachStrategy(Subscriber o) {
+		this.strategies.add(o);
 	}
 	
-	public void Detach(Strategy o) {
-		this.subscribers.remove(o);
+	public void AttachOrder(Subscriber o) {
+		this.orders.add(o);
+	}
+	
+	public void DetachStrategy(Subscriber o) {
+		this.strategies.remove(o);
+	}
+	
+	public void DetachOrder(Subscriber o) {
+		this.orders.remove(o);
 	}
 	
 	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, String filePath) {

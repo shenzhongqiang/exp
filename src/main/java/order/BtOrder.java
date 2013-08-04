@@ -85,8 +85,11 @@ public class BtOrder extends Order  {
 		Query q = session.createQuery("from Position where account.id = :id and product = :product");
 		q.setParameter("id", account.getId());
 		q.setParameter("product",product);
-		
 		List list = q.list();
+		tx.commit();
+		
+		tx = session.beginTransaction();
+		
 		if(list.size() > 0) {
 			Position p = (Position) list.get(0);
 			int totalAmount = p.getAmount() - amount;
@@ -125,13 +128,13 @@ public class BtOrder extends Order  {
 			Date time = ft.parse(strTime);
 			PendingOrder po = new PendingOrder(this.account, time, product, stopPrice, amount, "stop");
 			session.save(po);
+			tx.commit();
 		}
 		catch(ParseException ex) {
 			tx.rollback();
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
 		}
-		tx.commit();
 	}
 	
 	public void LimitBuy(String product, String strTime, double limitPrice, int amount) {
@@ -260,7 +263,7 @@ public class BtOrder extends Order  {
 		q.setParameter("product", product);
 		List<PendingOrder> list = q.list();
 		tx.commit();
-		
+	
 		try {
 			for(int k = 0; k < list.size(); k++) {
 				PendingOrder po = list.get(k);
@@ -268,37 +271,33 @@ public class BtOrder extends Order  {
 				if(po.getAmount() > 0 && po.getType() == "limit") { // buy limit
 					if(ask.getLow() <= po.getPrice()) {
 						double price = Math.min(ask.getHigh(), po.getPrice());
-						tx = session.beginTransaction();
 						this.MarketBuy(po.getProduct(), ask.getStart(), price, po.getAmount());
-						session.delete(po);
-						tx.commit();
+						this.CancelPendingOrder(po);
+						//System.out.println("buy limit turns to market buy");
 					}
 				}
 				else if(po.getAmount() > 0 && po.getType() == "stop") { //buy stop
 					if(ask.getHigh() >= po.getPrice()) {
 						double price = Math.max(ask.getLow(), po.getPrice());
-						tx = session.beginTransaction();
 						this.MarketBuy(po.getProduct(), ask.getStart(), price, po.getAmount());
-						session.delete(po);
-						tx.commit();
+						this.CancelPendingOrder(po);
+						//System.out.println("buy stop turns to market buy");
 					}	
 				}
 				else if(po.getAmount() < 0 && po.getType() == "limit") { //sell limit
 					if(bid.getHigh() >= po.getPrice()) {
 						double price = Math.max(bid.getLow(), po.getPrice());
-						tx = session.beginTransaction();
 						this.MarketSell(po.getProduct(), bid.getStart(), price, po.getAmount() * -1);
-						session.delete(po);
-						tx.commit();
+						this.CancelPendingOrder(po);
+						//System.out.println("sell limit turns to market sell");
 					}
 				}
 				else if(po.getAmount() < 0 && po.getType() == "stop") { // sell stop
 					if(bid.getLow() <= po.getPrice()) {
 						double price = Math.min(bid.getHigh(), po.getPrice());
-						tx = session.beginTransaction();
 						this.MarketSell(po.getProduct(), bid.getStart(), price, po.getAmount() * -1);
-						session.delete(po);
-						tx.commit();
+						this.CancelPendingOrder(po);
+						//System.out.println("sell stop turns to market sell");
 					}
 				}
 			}

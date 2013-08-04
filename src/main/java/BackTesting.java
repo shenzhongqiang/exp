@@ -5,6 +5,7 @@ import org.hibernate.*;
 import org.hibernate.cfg.*;
 import java.util.*;
 import order.*;
+import report.*;
 
 public class BackTesting {
 
@@ -13,21 +14,34 @@ public class BackTesting {
 		Transaction tx = session.beginTransaction();
 		Account account = (Account) session.get(Account.class, 1);
 		tx.commit();
+		
+		Report report = new Report(session, account);
+		double totalPl = report.getPl();
+		System.out.println(totalPl);
+		
+		/*
 		cleanUp(session, account);
-
 
 		Order order = new BtOrder(session, account);
 		TurtleStrategy ts = new TurtleStrategy(order);
 		
 		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-12-31");
 		int barNum = mdp.getBarNum();
-		mdp.Attach(order);
-		mdp.Attach(ts);
+		mdp.AttachOrder(order);
+		mdp.AttachStrategy(ts);
+		
+		
 		int i = 0;
-		while(mdp.Notify()) {
+		while(true) {
 			i++;
 			System.out.println(String.format("%d/%d", i, barNum));
+			
+			boolean flag = mdp.Notify();
+			if(flag == false) {
+				break;
+			}
 		}
+		*/
 		
 		session.close();
 		HibernateUtil.shutdown();

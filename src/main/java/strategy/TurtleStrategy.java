@@ -44,11 +44,12 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 			if(state > 0 && low < rangeLow) {
 				// close position
 				Position p = order.getPosition(product);
-				order.MarketSell(product, bidTs.get(i).getStart(), bidTs.get(i).getLow(), p.getAmount());
+				order.MarketSell(product, bidTs.get(i).getStart(), low, p.getAmount());
 				
 				// cancel all pending orders
 				order.CancelAllPendingOrders(product);				
 				state = 0;
+				//System.out.println("breakout 10 day low. market sell at " + low + ". cancel all pending.");
 			}
 			
 			
@@ -69,6 +70,8 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 				order.MarketBuy(product, entryTime, entryPrice, unit);
 				order.StopSell(product, entryTime, stopPrice, unit);
 				state = 1;
+				
+				//System.out.println("breakout 20 day high. market buy at " + entryPrice + ". stop at " + stopPrice);
 			}
 			else if(state == 1 && state < 4 && high > entryPrice + n /2) {
 				//add one unit until 4 units
@@ -83,7 +86,9 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 					double stopPrice = po.getPrice() + n/2;
 					order.UpdatePendingOrder(po, po.getAmount(), stopPrice);
 				}
+				
 				state++;
+				//System.out.println("adding unit. market buy at " + entryPrice);
 			}
 		}
 		catch(Exception ex) {
