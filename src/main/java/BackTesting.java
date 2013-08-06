@@ -1,9 +1,12 @@
 import data.*;
 import strategy.*;
 import model.*;
+
 import org.hibernate.*;
 import org.hibernate.cfg.*;
+
 import java.util.*;
+
 import order.*;
 import report.*;
 
@@ -15,11 +18,6 @@ public class BackTesting {
 		Account account = (Account) session.get(Account.class, 1);
 		tx.commit();
 		
-		Report report = new Report(session, account);
-		double totalPl = report.getPl();
-		System.out.println(totalPl);
-		
-		/*
 		cleanUp(session, account);
 
 		Order order = new BtOrder(session, account);
@@ -33,15 +31,25 @@ public class BackTesting {
 		
 		int i = 0;
 		while(true) {
+			
 			i++;
 			System.out.println(String.format("%d/%d", i, barNum));
+			/*
+			if(i==1000) {break;}
+			
+			System.out.println("================");
+			System.out.println(String.format("%d/%d", i, barNum));
+			*/
 			
 			boolean flag = mdp.Notify();
 			if(flag == false) {
 				break;
 			}
 		}
-		*/
+		
+		Report report = new Report(session, account);
+		double totalPl = report.getPl();		
+		System.out.println(totalPl);
 		
 		session.close();
 		HibernateUtil.shutdown();

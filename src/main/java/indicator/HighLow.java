@@ -36,9 +36,9 @@ public class HighLow extends Indicator {
 			throw new Exception(i + " is out of range, max allowed is " + len);
 		}
 		
-		double low = 0;
+		double low = md.get(i).getLow();
 		for(int k=i; k > i - n; k--) {
-			low = Math.max(md.get(k).getLow(), low);
+			low = Math.min(md.get(k).getLow(), low);
 		}
 		return low;
 	}
