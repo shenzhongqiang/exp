@@ -297,7 +297,7 @@ public class BtOrder extends Order  {
 						double price = Math.min(bid.getHigh(), po.getPrice());
 						this.MarketSell(po.getProduct(), bid.getStart(), price, po.getAmount() * -1);
 						this.CancelPendingOrder(po);
-						//System.out.println("sell stop turns to market sell");
+						System.out.println("sell stop turns to market sell");
 					}
 				}
 			}
