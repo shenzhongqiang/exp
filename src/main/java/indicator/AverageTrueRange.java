@@ -2,14 +2,33 @@ package indicator;
 import java.util.*;
 import data.MarketData;;
 
+/**
+ * Calculate average true range
+ * 
+ * @author Zhongqiang Shen
+ */
 public class AverageTrueRange extends Indicator {
 	private int n;
 	private ArrayList<Float> buffer;
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param n - number of days (e.g. n=20 means 20 day ATR)
+	 */
 	public AverageTrueRange(int n) {
 		this.buffer = new ArrayList<Float>();
 		this.n = n;
 	}
 	
+	/**
+	 * Get ATR as if specified index has the latest market data
+	 * 
+	 * @param md - array list of market data {@link MarketData}
+	 * @param i - the specified index
+	 * @return ATR as if specified index has the latest market data
+	 * @throws Exception
+	 */
 	public double getAtr(ArrayList<MarketData> md, int i) throws Exception {
 		int len = md.size();
 		if(len == 0) {
@@ -28,6 +47,14 @@ public class AverageTrueRange extends Indicator {
 		return atr;
 	}
 	
+	/**
+	 * Get true range of the specified index
+	 * 
+	 * @param md - array list of market data {@link MarketData}
+	 * @param i - the specified index
+	 * @return true range of the specified index
+	 * @throws Exception
+	 */
 	public double getTr(ArrayList<MarketData> md, int i) throws Exception {
 		int len = md.size();
 		if(len == 0) {

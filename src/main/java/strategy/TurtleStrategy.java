@@ -8,17 +8,37 @@ import model.*;
 import subscriber.*;
 import order.Order;
 
+/**
+ * Turtle Strategy
+ * 
+ * @author Zhongqiang Shen
+ */
 public class TurtleStrategy extends Strategy implements Subscriber {
 	private int state = 0;
 	private double entryPrice = 0;
+	// N = Average True Range
 	private double n = 0;
+	// unit when opening position, will be used later when adding positions
 	private int unit = 0;
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param order - the specified order {@link Order}
+	 */
 	public TurtleStrategy(Order order) {
 		this.order = order;
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
 	}
 	
+	/**
+	 * Update market data and run strategy
+	 * 
+	 * @param product - the specified product (e.g. EURUSD)
+	 * @param bid - the bid {@link MarketData}
+	 * @param ask - the ask {@link MarketData}
+	 */
 	@Override
 	public void Update(String product, MarketData bid, MarketData ask) {
 		bidTs.add(bid);
@@ -26,8 +46,15 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 		Run(product);
 	}
 	
+	/**
+	 * Run strategy
+	 * 
+	 * @param product - the specified product (e.g. EURUSD)
+	 */
 	public void Run(String product) {
 		int i = bidTs.size() - 1;
+		
+		// skip first 50 market data to give room for calculating indicators
 		if(i < 50) {
 			return;
 		}
