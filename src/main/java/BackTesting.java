@@ -23,7 +23,7 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		TurtleStrategy ts = new TurtleStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-12-31");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-12-15", "2012-12-31");
 		int barNum = mdp.getBarNum();
 		mdp.AttachOrder(order);
 		mdp.AttachStrategy(ts);
@@ -31,16 +31,8 @@ public class BackTesting {
 		
 		int i = 0;
 		while(true) {
-			
 			i++;
 			System.out.println(String.format("%d/%d", i, barNum));
-			/*
-			if(i==1000) {break;}
-			
-			System.out.println("================");
-			System.out.println(String.format("%d/%d", i, barNum));
-			*/
-			
 			boolean flag = mdp.Notify();
 			if(flag == false) {
 				break;
@@ -48,7 +40,7 @@ public class BackTesting {
 		}
 		
 		Report report = new Report(session, account);
-		double totalPl = report.getPl();		
+		double totalPl = report.getProfitLoss();		
 		System.out.println(totalPl);
 		
 		session.close();
