@@ -10,6 +10,11 @@ import au.com.bytecode.opencsv.CSVReader;
 import strategy.Strategy;
 import subscriber.*;
 
+/**
+ * Push market data to upper layer like strategy or order
+ * 
+ * @author Zhongqiang Shen
+ */
 public class MarketDataPusher {
 	private String product;
 	private int curr;
@@ -21,6 +26,14 @@ public class MarketDataPusher {
 	private ArrayList<MarketData> bidBuffer;
 	private ArrayList<MarketData> askBuffer;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param product - the specified product (e.g. EURUSD)
+	 * @param timeframe - timeframe (e.g. 15m)
+	 * @param start - start time
+	 * @param end - end time
+	 */
 	public MarketDataPusher(String product, int timeframe, 
 			String start, String end) {
 		this.product = product;
@@ -49,6 +62,7 @@ public class MarketDataPusher {
 		Set<Date> dates = tm.keySet();
 		this.askBuffer = new ArrayList<MarketData>();
 		this.bidBuffer = new ArrayList<MarketData>();
+		// store all market data ranging from start to end into bid and ask buffer
 		for(Date date: dates) {
 			String filePath = tm.get(date); 
 			
@@ -60,20 +74,28 @@ public class MarketDataPusher {
 			
 		}
 		
+		// initialize array list of subsribers
 		this.strategies = new ArrayList<Subscriber>();
 		this.orders = new ArrayList<Subscriber>();
 		curr = 0;
 	}
 	
+	/**
+	 * Notify subscribers
+	 * 
+	 * @return true if there is still upcoming data in buffer, false if it reaches the end of buffer
+	 */
 	public boolean Notify() {
 		if(curr < this.bidBuffer.size()) {
 			MarketData bid = this.bidBuffer.get(curr);
 			MarketData ask = this.askBuffer.get(curr);
 			
+			// notify all orders
 			for(Subscriber s: this.orders) {
 				s.Update(product, bid, ask);
 			}
 			
+			// notify all strategies
 			for(Subscriber s: this.strategies) {
 				s.Update(product, bid, ask);
 			}
