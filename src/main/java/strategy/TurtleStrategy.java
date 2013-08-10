@@ -14,10 +14,22 @@ import order.Order;
  * @author Zhongqiang Shen
  */
 public class TurtleStrategy extends Strategy implements Subscriber {
+	// state 
+	// 0 - no open position
+	// 1 - one unit
+	// 2 - two unit2
+	// 3 - three units
+	// 4 - four units
 	private int state = 0;
 	private double entryPrice = 0;
-	// N = Average True Range
+	// N = value of ATR
 	private double n = 0;
+	// indicator - ATR
+	private AverageTrueRange atr;
+	// indicator - 20 day high
+	private HighLow high20;
+	// indicator - 10 day low
+	private HighLow low10;
 	// unit when opening position, will be used later when adding positions
 	private int unit = 0;
 	
@@ -30,6 +42,9 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 		this.order = order;
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
+		this.atr = new AverageTrueRange(20);
+		this.high20 = new HighLow(20);
+		this.low10 = new HighLow(10);
 	}
 	
 	/**
@@ -54,11 +69,6 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 	public void Run(String product) {
 		int i = bidTs.size() - 1;
 		
-		// skip first 50 market data to give room for calculating indicators
-		if(i < 50) {
-			return;
-		}
-		
 		/*
 		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f", 
 				bidTs.get(i).getClose(), 
@@ -68,6 +78,13 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 				askTs.get(i).getHigh()));
 		*/
 		
+		// skip first 50 market data to give room for calculating indicators
+		if(i < 50) {
+			return;
+		}
+		
+		
+		
 		try {
 			//check if has position
 			if(! order.HasPosition(product)) {
@@ -75,7 +92,7 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 			}
 			
 			//close positions if breakout 10 day low
-			double rangeLow = new HighLow(10).getLow(bidTs, i - 1);
+			double rangeLow = low10.getLow(bidTs, i - 1);
 			double low = bidTs.get(i).getLow();
 			if(state > 0 && low < rangeLow) {
 				// close position
@@ -90,15 +107,14 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 			
 			
 			//check for open new positions
-			double rangeHigh = new HighLow(20).getHigh(bidTs, i - 1);
+			double rangeHigh = high20.getHigh(bidTs, i - 1);
 			double high = bidTs.get(i).getHigh();
 			
 			if(state == 0 && high > rangeHigh) {
 				// buy one unit
-				AverageTrueRange atr = new AverageTrueRange(20);
-				n = atr.getAtr(bidTs, i - 1);
+				n = this.atr.getAtr(bidTs, i - 1);
 				double dollarVol = n * 10000 * order.getAccount().getDollarPerPoint();
-				unit = (int) Math.floor(0.01 * order.getAccount().getMargin() / dollarVol);
+				unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
 				String entryTime = askTs.get(i).getStart();
 				entryPrice = askTs.get(i).getHigh();
 				double stopPrice = entryPrice - 2 * n;

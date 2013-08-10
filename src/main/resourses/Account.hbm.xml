@@ -11,11 +11,13 @@
             <generator class="increment"/> 
         </id> 
 
-        <property name="margin" column="margin" type="double"/> 
         <property name="floatPl" column="floatPl" type="double"/> 
 		<property name="floatRisk" column="floatRisk" type="double"/>
 		<property name="maxRiskPercent" column="maxRiskPercent" type="double"/> 
-		<property name="dollarPerPoint" column="dollarPerPoint" type="double"/>  
+		<property name="dollarPerPoint" column="dollarPerPoint" type="double"/>
+		<property name="balance" column="balance" type="double"/>
+		<property name="equity" column="equity" type="double"/>
+		<property name="usedMargin" column="usedMargin" type="double"/>   
     </class> 
 
 </hibernate-mapping>

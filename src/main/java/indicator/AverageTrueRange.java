@@ -9,7 +9,7 @@ import data.MarketData;;
  */
 public class AverageTrueRange extends Indicator {
 	private int n;
-	private ArrayList<Float> buffer;
+	private ArrayList<Double> buffer;
 	
 	/**
 	 * Constructor
@@ -17,7 +17,7 @@ public class AverageTrueRange extends Indicator {
 	 * @param n - number of days (e.g. n=20 means 20 day ATR)
 	 */
 	public AverageTrueRange(int n) {
-		this.buffer = new ArrayList<Float>();
+		this.buffer = new ArrayList<Double>();
 		this.n = n;
 	}
 	
@@ -25,7 +25,7 @@ public class AverageTrueRange extends Indicator {
 	 * Get ATR as if specified index has the latest market data
 	 * 
 	 * @param md - array list of market data {@link MarketData}
-	 * @param i - the specified index
+	 * @param i - the specified index, zero based
 	 * @return ATR as if specified index has the latest market data
 	 * @throws Exception
 	 */
@@ -39,10 +39,20 @@ public class AverageTrueRange extends Indicator {
 			throw new Exception(i + " is out of range, max allowed is " + len);
 		}
 		
+		if(buffer.size() > i) {
+			return buffer.get(i);
+		}
+		
 		double atr = 0;
-		for(int k = 0; k < i; k++) {
+		if(buffer.size() > 0) {
+			int bufferLen = buffer.size();
+			atr = buffer.get(bufferLen - 1);
+		}
+		
+		for(int k = buffer.size(); k <= i; k++) {
 			double tr = this.getTr(md, k);
 			atr = ((this.n - 1) * atr + tr) / this.n;
+			buffer.add(atr);
 		}
 		return atr;
 	}
@@ -51,7 +61,7 @@ public class AverageTrueRange extends Indicator {
 	 * Get true range of the specified index
 	 * 
 	 * @param md - array list of market data {@link MarketData}
-	 * @param i - the specified index
+	 * @param i - the specified index, zero based
 	 * @return true range of the specified index
 	 * @throws Exception
 	 */
