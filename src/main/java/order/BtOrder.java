@@ -2,11 +2,14 @@ package order;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+
 import model.*;
 import data.*;
+
 import java.text.ParseException;
 
 /**
@@ -84,31 +87,36 @@ public class BtOrder extends Order  {
 		q.setParameter("id", account.getId());
 		q.setParameter("product",product);
 		List list = q.list();
+		tx.commit();
+		
 		if(list.size() > 0) {
 			Position p = (Position) list.get(0);
 			int totalAmount = p.getAmount() + amount;
 			if(totalAmount == 0) {
+				tx = session.beginTransaction();
 				session.delete(p);
+				tx.commit();
 			}
 			else {
 				p.setAmount(totalAmount);
+				tx = session.beginTransaction();
 				session.update(p);
+				tx.commit();
 			}
 		}
 		else {
 			Position p = new Position(this.account, product, amount);
+			tx = session.beginTransaction();
 			session.save(p);
+			tx.commit();
 		}
 
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
-			TransactionHistory th = new TransactionHistory(this.account, time, product, price, amount);
-			session.save(th);
-			tx.commit();
+			this.SaveBuyTransaction(time, product, price, amount);
 		}
 		catch(ParseException ex) {
-			tx.rollback();
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
 		}
@@ -130,36 +138,198 @@ public class BtOrder extends Order  {
 		List list = q.list();
 		tx.commit();
 		
-		tx = session.beginTransaction();
-		
 		if(list.size() > 0) {
 			Position p = (Position) list.get(0);
 			int totalAmount = p.getAmount() - amount;
 			if(totalAmount == 0) {
+				tx = session.beginTransaction();
 				session.delete(p);
+				tx.commit();
 			}
 			else {
 				p.setAmount(totalAmount);
-				session.update(p);	
+				tx = session.beginTransaction();
+				session.update(p);
+				tx.commit();
 			}
 
 		}
 		else {
 			Position p = new Position(this.account, product, amount * -1);
+			tx = session.beginTransaction();
 			session.save(p);
+			tx.commit();
 		}
 		
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
-			TransactionHistory th = new TransactionHistory(this.account, time, product, price, amount * -1);
-			session.save(th);
-			tx.commit();
+			this.SaveSellTransaction(time, product, price, amount);
 		}
 		catch(ParseException ex) {
-			tx.rollback();
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
+		}
+	}
+	
+	private void SaveBuyTransaction(Date time, String product, double price, int amount) {
+		Transaction tx = session.beginTransaction();
+		Query q = session.createQuery("from OpenTransaction where account.id = :id order by time asc");
+		q.setParameter("id", account.getId());
+		List list = q.list();
+		tx.commit();
+		
+		System.out.println("list size:" + list.size());
+		if(list.size() == 0) {
+			// if no open transactions, add this transaction to open transaction and transaction history
+			OpenTransaction ot = new OpenTransaction(account, time, product, price, amount);
+			TransactionHistory th = new TransactionHistory(account, time, product, price, amount);
+			
+			tx = session.beginTransaction();
+			session.save(ot);
+			session.save(th);
+			tx.commit();
+			//System.out.println("open position - added open transaction");
+		}
+		else {
+			// if there is open transactions, first determine the direction of the open transactions
+			OpenTransaction first = (OpenTransaction) list.get(0);
+			if(first.getAmount() > 0) {
+				// if open transactions are long, add this transaction to open transaction and transaction history
+				OpenTransaction ot = new OpenTransaction(account, time, product, price, amount);
+				TransactionHistory th = new TransactionHistory(account, time, product, price, amount);
+				tx = session.beginTransaction();
+				session.save(ot);
+				session.save(th);
+				tx.commit();
+				//System.out.println("added position - added open transaction");
+			}
+			else {
+				// if open transactions are short, close open transactions
+				int remainAmount = amount;
+				Iterator<OpenTransaction> j = list.iterator();
+				
+				double totalPl = 0;
+				while(j.hasNext() && remainAmount > 0) {
+					OpenTransaction item = j.next();
+					if(remainAmount + item.getAmount() >= 0) {
+						double pl = item.getAmount() * 1000 * (price - item.getPrice());
+						totalPl += pl;
+						remainAmount += item.getAmount();
+						tx = session.beginTransaction();
+						session.delete(item);
+						tx.commit();
+						//System.out.println("close position - removed open transaction");
+					}
+					else {
+						double pl = remainAmount * -1 * 1000 * (price - item.getPrice());
+						totalPl += pl;
+						item.setAmount(remainAmount + item.getAmount());
+						remainAmount = 0;
+						tx = session.beginTransaction();
+						session.update(item);
+						tx.commit();
+						//System.out.println("close position - updated open transaction");
+					}
+				}
+				
+				// if after closing all open transactions, 
+				// there is still remaining amount in the long transaction,
+				// add that long transaction with remaining amount to the open transaction
+				if(remainAmount > 0) {
+					tx = session.beginTransaction();
+					OpenTransaction ot = new OpenTransaction(account, time, product, price, remainAmount);
+					session.save(ot);
+					tx.commit();
+				}
+				
+				account.setBalance(account.getBalance() + totalPl);
+				TransactionHistory th = new TransactionHistory(account, time, product, price, amount);
+				tx = session.beginTransaction();
+				session.update(account);
+				session.save(th);
+				tx.commit();
+			}
+		}
+	}
+	
+	private void SaveSellTransaction(Date time, String product, double price, int amount) {
+		Transaction tx = session.beginTransaction();
+		Query q = session.createQuery("from OpenTransaction where account.id = :id order by time asc");
+		q.setParameter("id", account.getId());
+		List list = q.list();
+		tx.commit();
+		
+		if(list.size() == 0) {
+			// if no open transactions, add this transaction to open transaction and transaction history
+			OpenTransaction ot = new OpenTransaction(account, time, product, price, amount * -1);
+			TransactionHistory th = new TransactionHistory(account, time, product, price, amount * -1);
+			
+			tx = session.beginTransaction();
+			session.save(ot);
+			session.save(th);
+			tx.commit();
+			//System.out.println("open position - added open transaction");
+		}
+		else {
+			// if there is open transactions, first determine the direction of the open transactions
+			OpenTransaction first = (OpenTransaction) list.get(0);
+			if(first.getAmount() < 0) {
+				// if open transactions are short, add this transaction to open transaction and transaction history
+				OpenTransaction ot = new OpenTransaction(account, time, product, price, amount * -1);
+				TransactionHistory th = new TransactionHistory(account, time, product, price, amount * -1);
+				tx = session.beginTransaction();
+				session.save(ot);
+				session.save(th);
+				tx.commit();
+				//System.out.println("add position - added open transaction");
+			}
+			else {
+				// if open transactions are long, close open transactions
+				int remainAmount = amount * -1;
+				Iterator<OpenTransaction> j = list.iterator();
+				
+				double totalPl = 0;
+				while(j.hasNext() && remainAmount < 0) {
+					OpenTransaction item = j.next();
+					if(remainAmount + item.getAmount() <= 0) {
+						double pl = item.getAmount() * 1000 * (price - item.getPrice());
+						totalPl += pl;
+						remainAmount += item.getAmount();
+						tx = session.beginTransaction();
+						session.delete(item);
+						tx.commit();
+						//System.out.println("close position - removed open transaction");
+					}
+					else {
+						double pl = remainAmount * -1 * 1000 * (price - item.getPrice());
+						totalPl += pl;
+						item.setAmount(remainAmount + item.getAmount());
+						remainAmount = 0;
+						tx = session.beginTransaction();
+						session.update(item);
+						tx.commit();
+						//System.out.println("close position - updated open transaction");
+					}
+				}
+				
+				// if after closing all open transactions, 
+				// there is still remaining amount in the long transaction,
+				// add that long transaction with remaining amount to the open transaction
+				if(remainAmount > 0) {
+					tx = session.beginTransaction();
+					OpenTransaction ot = new OpenTransaction(account, time, product, price, remainAmount);
+					session.save(ot);
+					tx.commit();
+				}
+				
+				account.setBalance(account.getBalance() + totalPl);
+				TransactionHistory th = new TransactionHistory(account, time, product, price, amount * -1);
+				tx = session.beginTransaction();
+				session.update(account);
+				session.save(th);
+				tx.commit();
+			}
 		}
 	}
 	

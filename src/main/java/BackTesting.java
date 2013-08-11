@@ -34,7 +34,7 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		TurtleStrategy ts = new TurtleStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-01-31");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-03-31");
 		int barNum = mdp.getBarNum();
 		
 		// attach order as subscriber for market data
@@ -74,6 +74,9 @@ public class BackTesting {
 		Transaction tx = session.beginTransaction();
 		// delete all existing positions
 		Query q = session.createQuery("delete from Position");
+		q.executeUpdate();
+		// delete all open transactions
+		q = session.createQuery("delete from OpenTransaction");
 		q.executeUpdate();
 		// delete all existing transaction history
 		q = session.createQuery("delete from TransactionHistory");

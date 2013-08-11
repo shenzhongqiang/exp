@@ -89,10 +89,10 @@ public class Report {
 							}
 							else {
 								// if there is no remaining amount in the short transaction
-								double pl = th.getAmount() * 1000 * (th.getPrice() - item.getPrice());
+								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
 								totalPl += pl;
+								item.setAmount(remainAmount + item.getAmount());
 								remainAmount = 0;
-								item.setAmount(th.getAmount() + item.getAmount());
 								System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
@@ -122,10 +122,10 @@ public class Report {
 							}
 							else {
 								// if there is no remaining amount in the long transaction
-								double pl = th.getAmount() * 1000 * (th.getPrice() - item.getPrice());
+								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
 								totalPl += pl;
 								remainAmount = 0;
-								item.setAmount(th.getAmount() + item.getAmount());
+								item.setAmount(remainAmount + item.getAmount());
 								System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
