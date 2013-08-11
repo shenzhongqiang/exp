@@ -57,7 +57,7 @@ public class BackTesting {
 		// generate profit loss report
 		Report report = new Report(session, account);
 		double totalPl = report.getProfitLoss();		
-		System.out.println(totalPl);
+		System.out.println("Total P/L:" + totalPl);
 		
 		// close database connection
 		session.close();

@@ -112,6 +112,7 @@ public class BtOrder extends Order  {
 		}
 
 		this.SaveBuyTransaction(strTime, product, price, amount);
+		System.out.println(String.format("%s - buy %d mini lot %s at %f", strTime, amount, product, price));
 }
 	
 	/**
@@ -154,6 +155,7 @@ public class BtOrder extends Order  {
 		}
 		
 		this.SaveSellTransaction(strTime, product, price, amount);
+		System.out.println(String.format("%s - sell %d mini lot %s at %f", strTime, amount, product, price));
 	}
 	
 	/**
@@ -184,7 +186,6 @@ public class BtOrder extends Order  {
 				session.save(ot);
 				session.save(th);
 				tx.commit();
-				//System.out.println("open position - added open transaction");
 			}
 			else {
 				// if there is open transactions, first determine the direction of the open transactions

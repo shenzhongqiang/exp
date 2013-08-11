@@ -140,6 +140,7 @@ public class Report {
 					}
 				}
 			}
+			System.out.println(totalPl);
 		}
 			
 		return totalPl;
