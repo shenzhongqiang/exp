@@ -85,7 +85,7 @@ public class Report {
 								totalPl += pl;
 								remainAmount += item.getAmount();
 								j.remove();
-								System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
+								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
 							}
 							else {
 								// if there is no remaining amount in the short transaction
@@ -93,7 +93,7 @@ public class Report {
 								totalPl += pl;
 								item.setAmount(remainAmount + item.getAmount());
 								remainAmount = 0;
-								System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
+								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
 						
@@ -118,7 +118,7 @@ public class Report {
 								totalPl += pl;
 								remainAmount += item.getAmount();
 								j.remove();
-								System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
+								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
 							}
 							else {
 								// if there is no remaining amount in the long transaction
@@ -126,7 +126,7 @@ public class Report {
 								totalPl += pl;
 								remainAmount = 0;
 								item.setAmount(remainAmount + item.getAmount());
-								System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
+								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
 						

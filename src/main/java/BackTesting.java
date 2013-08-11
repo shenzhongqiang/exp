@@ -34,7 +34,7 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		TurtleStrategy ts = new TurtleStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-03-31");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-01-31");
 		int barNum = mdp.getBarNum();
 		
 		// attach order as subscriber for market data
