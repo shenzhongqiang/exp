@@ -27,9 +27,9 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 	// indicator - ATR
 	private AverageTrueRange atr;
 	// indicator - 20 day high
-	private HighLow high20;
+	private RangeHigh high20;
 	// indicator - 10 day low
-	private HighLow low10;
+	private RangeLow low10;
 	// unit when opening position, will be used later when adding positions
 	private int unit = 0;
 	
@@ -43,8 +43,8 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
 		this.atr = new AverageTrueRange(20);
-		this.high20 = new HighLow(20);
-		this.low10 = new HighLow(10);
+		this.high20 = new RangeHigh(20);
+		this.low10 = new RangeLow(10);
 	}
 	
 	/**
@@ -58,6 +58,9 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 	public void Update(String product, MarketData bid, MarketData ask) {
 		bidTs.add(bid);
 		askTs.add(ask);
+		atr.Update(bid);
+		high20.Update(bid);
+		low10.Update(bid);
 		Run(product);
 	}
 	
@@ -92,7 +95,7 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 			}
 			
 			//close positions if breakout 10 day low
-			double rangeLow = low10.getLow(bidTs, i - 1);
+			double rangeLow = low10.getRangeLow(i - 1);
 			double low = bidTs.get(i).getLow();
 			if(state > 0 && low < rangeLow) {
 				// close position
@@ -107,12 +110,12 @@ public class TurtleStrategy extends Strategy implements Subscriber {
 			
 			
 			//check for open new positions
-			double rangeHigh = high20.getHigh(bidTs, i - 1);
+			double rangeHigh = high20.getRangeHigh(i - 1);
 			double high = bidTs.get(i).getHigh();
 			
 			if(state == 0 && high > rangeHigh) {
 				// buy one unit
-				n = this.atr.getAtr(bidTs, i - 1);
+				n = this.atr.getAtr(i - 1);
 				double dollarVol = n * 10000 * order.getAccount().getDollarPerPoint();
 				unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
 				String entryTime = askTs.get(i).getStart();

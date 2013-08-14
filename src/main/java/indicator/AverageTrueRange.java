@@ -1,14 +1,18 @@
 package indicator;
 import java.util.*;
+
 import data.MarketData;;
 
 /**
  * Calculate average true range
  * 
  * @author Zhongqiang Shen
+ * 
  */
 public class AverageTrueRange extends Indicator {
 	private int n;
+	private ArrayList<MarketData> timeSeries;
+	// since ATR uses recursion calculation, store previous values in buffer to prevent duplicate calculation
 	private ArrayList<Double> buffer;
 	
 	/**
@@ -17,72 +21,86 @@ public class AverageTrueRange extends Indicator {
 	 * @param n - number of days (e.g. n=20 means 20 day ATR)
 	 */
 	public AverageTrueRange(int n) {
-		this.buffer = new ArrayList<Double>();
 		this.n = n;
+		this.timeSeries = new ArrayList<MarketData>();
+		this.buffer = new ArrayList<Double>();
+	}
+	
+	@Override
+	public void Update(MarketData data) {
+		this.timeSeries.add(data);
+		
+		int len = this.timeSeries.size();
+		
+		try {
+			if(len < n) {
+				buffer.add(0.0);
+				return;
+			}
+			
+			if(len == n) {
+				double sum = 0;
+				for(int i = 0; i <= n-1; i++) {
+					sum += this.getTr(i);
+				}
+				buffer.add(sum / n);
+				return;
+			}
+			
+			if(len > n) {
+				double prevAtr = buffer.get(len - 2);
+				double tr = this.getTr(len - 1);
+				double atr = (prevAtr * (n - 1) + tr) /n;
+				buffer.add(atr);
+				return;
+			}
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
 	}
 	
 	/**
 	 * Get ATR as if specified index has the latest market data
 	 * 
-	 * @param md - array list of market data {@link MarketData}
 	 * @param i - the specified index, zero based
 	 * @return ATR as if specified index has the latest market data
 	 * @throws Exception
 	 */
-	public double getAtr(ArrayList<MarketData> md, int i) throws Exception {
-		int len = md.size();
-		if(len == 0) {
-			throw new Exception("array list is empty");
-		}
+	public double getAtr(int i) throws Exception {
+		int len = timeSeries.size();
 		
 		if(i >= len) {
-			throw new Exception(i + " is out of range, max allowed is " + len);
+			throw new Exception(i + " is out of range");
 		}
-		
-		if(buffer.size() > i) {
-			return buffer.get(i);
-		}
-		
-		double atr = 0;
-		if(buffer.size() > 0) {
-			int bufferLen = buffer.size();
-			atr = buffer.get(bufferLen - 1);
-		}
-		
-		for(int k = buffer.size(); k <= i; k++) {
-			double tr = this.getTr(md, k);
-			atr = ((this.n - 1) * atr + tr) / this.n;
-			buffer.add(atr);
-		}
-		return atr;
+		return buffer.get(i);
 	}
 	
 	/**
 	 * Get true range of the specified index
-	 * 
-	 * @param md - array list of market data {@link MarketData}
+	 *
 	 * @param i - the specified index, zero based
 	 * @return true range of the specified index
 	 * @throws Exception
 	 */
-	public double getTr(ArrayList<MarketData> md, int i) throws Exception {
-		int len = md.size();
+	public double getTr(int i) throws Exception {
+		int len = timeSeries.size();
 		if(len == 0) {
 			throw new Exception("array list is empty");
 		}
 		
 		if(i >= len) {
-			throw new Exception(i + " is out of range, max allowed is " + len);
+			throw new Exception(i + " is out of range");
 		}
 		
 		double tr = 0;
 		if(i == 0) {
-			MarketData curr = md.get(i);
+			MarketData curr = timeSeries.get(i);
 			tr = curr.getHigh() - curr.getLow();
 		}
 		else {
-			MarketData curr = md.get(i);
-			MarketData prev = md.get(i - 1);
+			MarketData curr = timeSeries.get(i);
+			MarketData prev = timeSeries.get(i - 1);
 			double a1 = curr.getHigh() - curr.getLow();
 			double a2 = curr.getHigh() - prev.getClose();
 			double a3 = prev.getClose() - curr.getLow();
