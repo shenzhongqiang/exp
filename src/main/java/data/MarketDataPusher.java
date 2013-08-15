@@ -124,14 +124,6 @@ public class MarketDataPusher {
 	}
 	
 	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, String filePath) {
-		String pattern = "(\\d{4}-\\d{2}-\\d{2})";
-		Pattern r = Pattern.compile(pattern);
-		Matcher m = r.matcher(filePath);
-		
-		String date = "";
-		if(m.find()) {
-			date = m.group(1);
-		}
 		
 		ArrayList<MarketData> bids = new ArrayList<MarketData>();
 		ArrayList<MarketData> asks = new ArrayList<MarketData>();
@@ -140,8 +132,8 @@ public class MarketDataPusher {
 			String[] parts;
 			
 			while((parts = reader.readNext()) != null) {
-				String start = date + " " + parts[0];
-				String end = date + " " + parts[1];
+				String start = parts[0];
+				String end = parts[1];
 				
 				double bidOpen = Double.parseDouble(parts[2]);
 				double bidClose = Double.parseDouble(parts[3]);
