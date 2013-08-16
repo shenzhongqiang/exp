@@ -5,5 +5,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/opencsv"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/HibernateSQLite"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sqlite+hibernate"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
