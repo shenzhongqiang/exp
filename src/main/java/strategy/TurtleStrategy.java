@@ -128,7 +128,7 @@ public class TurtleStrategy extends Strategy {
 				
 				//System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
 			}
-			else if(state == 1 && state < 4 && high > entryPrice + n /2) {
+			else if(state < 4 && high > entryPrice + n /2) {
 				//add one unit until 4 units
 				String entryTime = askTs.get(i).getStart();
 				entryPrice = askTs.get(i).getHigh();
