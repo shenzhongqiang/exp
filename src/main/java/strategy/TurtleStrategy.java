@@ -13,7 +13,7 @@ import order.Order;
  * 
  * @author Zhongqiang Shen
  */
-public class TurtleStrategy extends Strategy implements Subscriber {
+public class TurtleStrategy extends Strategy {
 	// state 
 	// 0 - no open position
 	// 1 - one unit
