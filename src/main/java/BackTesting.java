@@ -32,15 +32,15 @@ public class BackTesting {
 	
 		// create new order object and turtle strategy object
 		Order order = new BtOrder(session, account);
-		TurtleStrategy ts = new TurtleStrategy(order);
+		Strategy strategy = new IdealTurtleStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-01-31");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-12-31");
 		int barNum = mdp.getBarNum();
 		
 		// attach order as subscriber for market data
 		mdp.AttachOrder(order);
 		// attach strategy as subscriber for market data
-		mdp.AttachStrategy(ts);
+		mdp.AttachStrategy(strategy);
 		
 		int i = 0;
 		// push market data and run strategy

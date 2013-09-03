@@ -29,7 +29,6 @@ public class Ema extends Indicator {
 	
 	public void Update(MarketData data) {
 		this.timeSeries.add(data);
-		
 		int len = this.timeSeries.size();
 		if(len < n) {
 			buffer.add(0.0);
@@ -46,7 +45,7 @@ public class Ema extends Indicator {
 		}
 		
 		if(len > n) {
-			double k = 2 / (n+1);
+			double k = (float) 2 / (n+1);
 			double prevEma = buffer.get(len - 2);
 			double ema = (timeSeries.get(len - 1).getClose() - prevEma) * k + prevEma;
 			buffer.add(ema);
