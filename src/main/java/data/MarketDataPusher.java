@@ -172,7 +172,7 @@ public class MarketDataPusher {
 	}
 	
 	private static TreeMap<Date, String> getDateFileMap() {
-		String path = "marketdata\\FX_FXCM_Demo_EUR-USD_2012_EST_15";
+		String path = "marketdata\\FX_FXCM_Demo_EUR-USD_2013_EST_5";
 		File folder = new File(path);
 		File[] files = folder.listFiles();
 		String pattern = "(\\d{4}-\\d{2}-\\d{2})";

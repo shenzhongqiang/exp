@@ -46,7 +46,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		IStatusMessageListener {
 	private static final String server = "http://www.fxcorporate.com/Hosts.jsp";
 	private static final String TEST_CURRENCY = "EUR/USD";
-	private static final String BASE_DIR = "E:\\research\\exchange\\marketdata";
+	private static final String BASE_DIR = "F:\\Documents and Settings\\Zhongqiang Shen\\My Documents\\project\\exp\\marketdata\\FX_FXCM_Demo_EUR-USD_2013_EST_5";
 
 	private FXCMLoginProperties login;
 	private IGateway gateway;
@@ -338,7 +338,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	 */
 	public void messageArrived(MarketDataRequestReject mdrr) {
 		// display note consisting of the reason the request was rejected
-		output.println("Historical data rejected; " + mdrr.getMDReqRejReason());
+		output.println("Historical data rejected; " + mdrr.getMDReqRejReason() + "," + mdrr.getText());
 		// set the state of the request to be complete
 		requestComplete = true;
 	}
@@ -372,7 +372,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		return currentDate.compareTo(endDate) <= 0;
 	}
 	
-	private void sendNextRequest(){
+	private void sendNextRequest() throws Exception {
 		//一次获取一天的数据
 		// create a new market data request
 		MarketDataRequest mdr = new MarketDataRequest();
@@ -381,24 +381,46 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		// request the response to be formated FXCM style
 		mdr.setResponseFormat(IFixDefs.MSGTYPE_FXCMRESPONSE);
 		// set the intervale of the data candles
-		mdr.setFXCMTimingInterval(FXCMTimingIntervalFactory.MIN15);
+		mdr.setFXCMTimingInterval(FXCMTimingIntervalFactory.MIN5);
 		// set the type set for the data candles
 		mdr.setMDEntryTypeSet(MarketDataRequest.MDENTRYTYPESET_ALL);
-		// configure the start and end dates set the dates and times for the market data request
-		mdr.setFXCMStartDate(new UTCDate(currentDate.getTime()));
-		mdr.setFXCMStartTime(new UTCTimeOnly(currentDate.getTime()));
-			
+		
+		int timeframe = 5;
+		int total = 1440;
+		int loop = (int)Math.ceil(total / (300.0 * timeframe));
 		currentEndDate = (Calendar)currentDate.clone();
 		currentEndDate.add(Calendar.DAY_OF_MONTH, 1);
-		mdr.setFXCMEndDate(new UTCDate(currentEndDate.getTime()));
-		mdr.setFXCMEndTime(new UTCTimeOnly(currentEndDate.getTime()));
-		// set the instrument on which the we want the historical data
-		mdr.addRelatedSymbol(tradeSessionStatus.getSecurity(TEST_CURRENCY));
-		
-		output.println("request marketdata start date: " + currentDate.getTime());
-		output.println("request marketdata end date: " + currentEndDate.getTime());
-		// send the request
-		sendRequest(mdr);
+		Calendar start = (Calendar)currentDate.clone();
+		Calendar end = (Calendar)currentDate.clone();
+		int interval = 300 * timeframe;
+		for(int i = 1; i <= loop; i++) {
+			if(i == loop) {
+				int left = total - interval * (i - 1);
+				end.add(Calendar.MINUTE, left);
+			}
+			else {
+				end.add(Calendar.MINUTE, interval);
+			}
+			
+			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			ft.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+			System.out.println("start:" + ft.format(start.getTime()));
+			System.out.println("end:" + ft.format(end.getTime()));
+			// configure the start and end dates set the dates and times for the market data request
+			mdr.setFXCMStartDate(new UTCDate(start.getTime()));
+			mdr.setFXCMStartTime(new UTCTimeOnly(start.getTime()));
+			mdr.setFXCMEndDate(new UTCDate(end.getTime()));
+			mdr.setFXCMEndTime(new UTCTimeOnly(end.getTime()));
+			// set the instrument on which the we want the historical data
+			mdr.addRelatedSymbol(tradeSessionStatus.getSecurity(TEST_CURRENCY));
+			
+			output.println("request marketdata start date: " + ft.format(currentDate.getTime()));
+			output.println("request marketdata end date: " + ft.format(currentEndDate.getTime()));
+			// send the request
+			sendRequest(mdr);
+			start.add(Calendar.MINUTE, interval);
+			Thread.sleep(2500);
+		}
 	}
 	
 	private void recordMarketData() throws Exception {
@@ -410,7 +432,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		}
 			
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-z");
-		sdf.setTimeZone(TimeZone.getTimeZone("EST"));
+		sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		//确定文件名
 		String filename = String.format("%s\\FX_FXCM_%s_%s_%s.csv", 
 				BASE_DIR, terminal, TEST_CURRENCY.replaceAll("/", "-"), sdf.format(this.currentDate.getTime()));
@@ -419,7 +441,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		// get the keys for the historicalRates table into a sorted list
 		SortedSet<UTCDate> candle = new TreeSet<UTCDate>(historicalRates.keySet());
 		// define a format for the dates
-		sdf.applyPattern("HH:mm:ss");
+		sdf.applyPattern("yyyy-MM-dd HH:mm:ss");
 		// go through the keys of the historicalRates table
 		if (candle.size() > 0) {
 			output.println(String.format("total record: %d.", candle.size()));
@@ -457,11 +479,11 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	public static void main(String[] args) throws Exception {
 		Calendar startTime = Calendar.getInstance();
-		startTime.setTimeZone(TimeZone.getTimeZone("EST"));
+		startTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		Calendar endTime = (Calendar)startTime.clone();
 		
-		startTime.set(2010, 0, 1, 0, 0, 0);
-		endTime.set(2010, 11, 31, 0, 0, 0);
+		startTime.set(2013, 8, 1, 0, 0, 0);
+		endTime.set(2013, 8, 27, 0, 0, 0);
 		
 		FXCMHisMarketDataMiner miner = new FXCMHisMarketDataMiner("rkichenama", "1311016", "Demo", startTime, endTime);
 		miner.login();

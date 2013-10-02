@@ -22,8 +22,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	private int state = 0;
 	private double stopPrice = 0;
 	private double r = 0;
-	private Ema ema5;
-	private Ema ema13;
+	private Ema ema8;
+	private Ema ema21;
 	private Ema ema55;
 	private RangeHigh high8;
 	private RangeLow low8;
@@ -37,8 +37,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 		this.order = order;
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
-		this.ema5 = new Ema(5);
-		this.ema13 = new Ema(13);
+		this.ema8 = new Ema(8);
+		this.ema21 = new Ema(21);
 		this.ema55 = new Ema(55);
 		this.high8 = new RangeHigh(8);
 		this.low8 = new RangeLow(8);
@@ -55,8 +55,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	public void Update(String product, MarketData bid, MarketData ask) {
 		bidTs.add(bid);
 		askTs.add(ask);
-		ema5.Update(bid);
-		ema13.Update(bid);
+		ema8.Update(bid);
+		ema21.Update(bid);
 		ema55.Update(bid);
 		high8.Update(bid);
 		low8.Update(bid);
@@ -72,13 +72,14 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 		int i = bidTs.size() - 1;
 
 		
+		/*
 		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f", 
 				bidTs.get(i).getClose(), 
 				bidTs.get(i).getLow(), 
 				bidTs.get(i).getHigh(), 
 				bidTs.get(i).getOpen(),
 				askTs.get(i).getHigh()));
-		
+		*/
 		// skip first 100 market data to give room for calculating indicators
 		if(i < 100) {
 			return;
@@ -90,17 +91,17 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				state = 0;
 			}
 			
-			double prevEma5 = ema5.getEma(i - 1);
-			double prevEma13 = ema13.getEma(i - 1);
-			double currEma5 = ema5.getEma(i);
-			double currEma13 = ema13.getEma(i);
+			double prevEma8 = ema8.getEma(i - 1);
+			double prevEma21 = ema21.getEma(i - 1);
+			double currEma8 = ema8.getEma(i);
+			double currEma21 = ema21.getEma(i);
 			
-			boolean isCrossed = prevEma5 < prevEma13 && currEma5 > currEma13; 
+			boolean isCrossed = prevEma8 < prevEma21 && currEma8 > currEma21; 
 			if(state == 0 && isCrossed) {
 				// buy one unit
 				double ask = askTs.get(i).getClose();
 				double rangeLow = low8.getRangeLow(i);
-				stopPrice = ask - (ask - rangeLow) * 0.2;
+				stopPrice = rangeLow - (ask - rangeLow) * 0.2;
 				r = ask - stopPrice;
 				String entryTime = askTs.get(i).getStart();
 				int unit = (int) (0.02 * order.getAccount().getBalance() / (ask - stopPrice) / 1000);
@@ -108,7 +109,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				order.StopSell(product, entryTime, stopPrice, unit);
 				state = 1;
 				
-				//System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
+				System.out.println(String.format("r:%f, rangeLow:%f. market buy %d at %f. stop at %f", r, rangeLow, unit, ask, stopPrice));
 			}
 			else if(state == 1) {
 				double high = askTs.get(i).getHigh();

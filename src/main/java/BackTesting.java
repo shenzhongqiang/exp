@@ -1,12 +1,9 @@
 import data.*;
 import strategy.*;
 import model.*;
-
 import org.hibernate.*;
 import org.hibernate.cfg.*;
-
 import java.util.*;
-
 import order.*;
 import report.*;
 
@@ -32,9 +29,9 @@ public class BackTesting {
 	
 		// create new order object and turtle strategy object
 		Order order = new BtOrder(session, account);
-		Strategy strategy = new IdealTurtleStrategy(order);
+		Strategy strategy = new EmaCrossStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2012-01-01", "2012-12-31");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2013-09-20", "2013-09-27");
 		int barNum = mdp.getBarNum();
 		
 		// attach order as subscriber for market data
@@ -55,9 +52,14 @@ public class BackTesting {
 		}
 		
 		// generate profit loss report
-		Report report = new Report(session, account);
-		double totalPl = report.getProfitLoss();		
-		System.out.println("Total P/L:" + totalPl);
+		try {
+			Report report = new Report(session, account);
+			double totalPl = report.getProfitLoss();		
+			System.out.println("Total P/L:" + totalPl);
+		}
+		catch(Exception ex) {
+			
+		}
 		
 		// close database connection
 		session.close();

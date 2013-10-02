@@ -1,8 +1,11 @@
 package report;
 import java.util.*;
+import java.io.*;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.apache.poi.hssf.usermodel.*;
+import org.apache.poi.ss.usermodel.*;
 import model.*;
 import java.text.SimpleDateFormat;
 
@@ -31,7 +34,7 @@ public class Report {
 	 * 
 	 * @return profit/loss
 	 */
-	public double getProfitLoss() {
+	public double getProfitLoss() throws Exception {
 		// get all transaction histories from database
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("from TransactionHistory where account.id = :id and product = :product order by time asc");
@@ -39,13 +42,24 @@ public class Report {
 		q.setParameter("product", "EURUSD");
 		List<TransactionHistory> list = q.list();
 		tx.commit();
-		
+		 
 		// initialize FIFO queue to empty queue. The queue will be used to store open transactions
 		ArrayList<TransactionHistory> open = new ArrayList<TransactionHistory>();
+		// initialize queue to store profit/loss for every closed transaction
+		ArrayList<Double> transacPl = new ArrayList<Double>();
+		
 		// initialize total P/L to 0
 		double totalPl = 0;
 		// initialize queue director to 0. 1 means long, -1 means short.
 		int queueDir = 0;
+		
+		// create spreadsheet
+		FileOutputStream out = new FileOutputStream("report.xls");
+		Workbook wb = new HSSFWorkbook();
+		Sheet s = wb.createSheet();
+		wb.setSheetName(0, "Closed Transaction");
+		writeHeader(wb, s);
+		
 		
 		// calculate total profit loss
 		for(int k = 0; k < list.size(); k++) {
@@ -85,6 +99,7 @@ public class Report {
 								totalPl += pl;
 								remainAmount += item.getAmount();
 								j.remove();
+								writeClosedTransaction(wb, s, item.getTime(), "buy", item.getAmount(), item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
 								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
 							}
 							else {
@@ -92,7 +107,9 @@ public class Report {
 								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
 								totalPl += pl;
 								item.setAmount(remainAmount + item.getAmount());
+								writeClosedTransaction(wb, s, item.getTime(), "buy", remainAmount, item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
 								remainAmount = 0;
+								
 								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
@@ -118,14 +135,17 @@ public class Report {
 								totalPl += pl;
 								remainAmount += item.getAmount();
 								j.remove();
+								writeClosedTransaction(wb, s, item.getTime(), "sell", item.getAmount(), item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
 								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
 							}
 							else {
 								// if there is no remaining amount in the long transaction
 								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
 								totalPl += pl;
-								remainAmount = 0;
 								item.setAmount(remainAmount + item.getAmount());
+								writeClosedTransaction(wb, s, item.getTime(), "sell", remainAmount, item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
+								remainAmount = 0;
+								
 								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
 							}
 						}
@@ -140,9 +160,62 @@ public class Report {
 					}
 				}
 			}
-			System.out.println(totalPl);
 		}
-			
+	
+		adjustColumnWidth(wb, s);
+		wb.write(out);
+		out.close();
 		return totalPl;
+	}
+	
+	public static void writeHeader(Workbook wb, Sheet s) {
+		// Create cell style for header row
+		CellStyle styleHeader = wb.createCellStyle();
+		Font fontHeader = wb.createFont();
+		fontHeader.setBoldweight(Font.BOLDWEIGHT_BOLD);
+		styleHeader.setFont(fontHeader);
+		Row r = s.createRow((short)0);
+		r.createCell(0).setCellValue("Open Time");
+		r.createCell(1).setCellValue("Type");
+		r.createCell(2).setCellValue("Size");
+		r.createCell(3).setCellValue("Product");
+		r.createCell(4).setCellValue("Open Price");
+		r.createCell(5).setCellValue("Close Time");
+		r.createCell(6).setCellValue("Close Price");
+		r.createCell(7).setCellValue("Profit");
+		for(int i = 0; i < r.getLastCellNum(); i++) {
+			Cell c = r.getCell(i);
+			c.setCellStyle(styleHeader);
+		}
+		
+	}
+	
+	public static void writeClosedTransaction(Workbook wb, Sheet s, 
+			Date openTime, String type, int size, String product, 
+			double openPrice, Date closeTime, double closePrice, double profit) {
+		int rowEnd = s.getLastRowNum();
+		Row r = s.createRow((short)rowEnd + 1);
+		CreationHelper createHelper = wb.getCreationHelper();
+		CellStyle dateStyle = wb.createCellStyle();
+		dateStyle.setDataFormat(createHelper.createDataFormat().getFormat("m/d/yy h:mm"));
+		Cell cellOpenTime = r.createCell(0);
+		cellOpenTime.setCellValue(openTime);
+		cellOpenTime.setCellStyle(dateStyle);
+		r.createCell(1).setCellValue(type);
+		r.createCell(2).setCellValue(size);
+		r.createCell(3).setCellValue(product);
+		r.createCell(4).setCellValue(openPrice);
+		Cell cellCloseTime = r.createCell(5);
+		cellCloseTime.setCellValue(closeTime);
+		cellCloseTime.setCellStyle(dateStyle);
+		r.createCell(6).setCellValue(closePrice);
+		r.createCell(7).setCellValue(profit);
+	}
+	
+	public static void adjustColumnWidth(Workbook wb, Sheet s) {
+		Row r = s.getRow(0);
+		for(int i = 0; i < r.getLastCellNum(); i++) {
+			s.autoSizeColumn(i);
+		}
 	}
 }
