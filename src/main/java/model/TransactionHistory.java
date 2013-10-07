@@ -10,19 +10,26 @@ public class TransactionHistory {
 	private double price;
 	private int amount;
 	private Date time;
-	
+	private int positionId;
+	private double pl;
 	
 	public TransactionHistory() {
 		
 	}
 	
-	public TransactionHistory(Account account, Date time, String product, double price, int amount) {
+	public TransactionHistory(Account account, Date time, String product, double price, int amount, int positionId) {
 		this.account = account;
 		this.product = product;
 		this.price = price;
 		this.amount = amount;
 		this.time = time;
 		this.type = "";
+		this.positionId = positionId;
+	}
+	
+	public TransactionHistory(Account account, Date time, String product, double price, int amount, int positionId, double pl) {
+		this(account, time, product, price, amount, positionId);
+		this.pl = pl;
 	}
 	
 	public int getId() {
@@ -79,5 +86,21 @@ public class TransactionHistory {
 	
 	public void setPrice(double price) {
 		this.price = price;
+	}
+	
+	public int getPositionId() {
+		return this.positionId;
+	}
+	
+	public void setPositionId(int positionId) {
+		this.positionId = positionId;
+	}
+	
+	public double getPl() {
+		return this.pl;
+	}
+	
+	public void setPl(double pl) {
+		this.pl = pl;
 	}
 }

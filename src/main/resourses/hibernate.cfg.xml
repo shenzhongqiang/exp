@@ -13,7 +13,6 @@
 		<property name="connection.password"></property>
 		
 		<mapping resource="TransactionHistory.hbm.xml"/>
-		<mapping resource="OpenTransaction.hbm.xml"/>
 		<mapping resource="Position.hbm.xml"/>
 		<mapping resource="Account.hbm.xml"/>
 		<mapping resource="PendingOrder.hbm.xml"/>

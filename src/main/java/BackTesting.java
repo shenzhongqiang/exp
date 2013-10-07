@@ -31,7 +31,7 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		Strategy strategy = new EmaCrossStrategy(order);
 		
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2013-09-20", "2013-09-27");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 15, "2013-07-01", "2013-07-31");
 		int barNum = mdp.getBarNum();
 		
 		// attach order as subscriber for market data
@@ -44,7 +44,7 @@ public class BackTesting {
 		while(true) {
 			i++;
 			
-			System.out.println(String.format("%d/%d", i, barNum));
+			//System.out.println(String.format("%d/%d", i, barNum));
 			boolean flag = mdp.Notify();
 			if(flag == false) {
 				break;
@@ -58,7 +58,7 @@ public class BackTesting {
 			System.out.println("Total P/L:" + totalPl);
 		}
 		catch(Exception ex) {
-			
+			System.out.println(ex.getMessage());
 		}
 		
 		// close database connection
@@ -76,9 +76,6 @@ public class BackTesting {
 		Transaction tx = session.beginTransaction();
 		// delete all existing positions
 		Query q = session.createQuery("delete from Position");
-		q.executeUpdate();
-		// delete all open transactions
-		q = session.createQuery("delete from OpenTransaction");
 		q.executeUpdate();
 		// delete all existing transaction history
 		q = session.createQuery("delete from TransactionHistory");

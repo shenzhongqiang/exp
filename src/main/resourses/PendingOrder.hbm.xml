@@ -17,6 +17,7 @@
 		<property name="type" column="type" type="string"/> 
 		<property name="price" column="price" type="double"/>
 		<property name="time" column="time" type="date"/>
+		<many-to-one name="position" column="position_id" class="model.Position"/>
     </class> 
 
 </hibernate-mapping>

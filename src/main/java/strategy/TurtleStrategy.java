@@ -103,7 +103,7 @@ public class TurtleStrategy extends Strategy {
 				order.MarketSell(product, bidTs.get(i).getStart(), low, p.getAmount());
 				
 				// cancel all pending orders
-				order.CancelAllPendingOrders(product);				
+				//order.CancelAllPendingOrders(product);				
 				state = 0;
 				//System.out.println(String.format("breakout 10 day low. market sell %d at %f. cancel all pending.", p.getAmount(), low));
 			}
@@ -122,8 +122,8 @@ public class TurtleStrategy extends Strategy {
 				entryPrice = askTs.get(i).getHigh();
 				double stopPrice = entryPrice - 2 * n;
 			
-				order.MarketBuy(product, entryTime, entryPrice, unit);
-				order.StopSell(product, entryTime, stopPrice, unit);
+				int pid = order.MarketBuy(product, entryTime, entryPrice, unit);
+				order.StopSell(product, entryTime, stopPrice, unit, pid);
 				state = 1;
 				
 				//System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
@@ -135,13 +135,13 @@ public class TurtleStrategy extends Strategy {
 				order.MarketBuy(product, entryTime, entryPrice, unit);
 				
 				//raise stops for earlier units
-				List<PendingOrder> list = order.getStopSellOrders(product);
+				/*List<PendingOrder> list = order.getStopSellOrders(product);
 				for(int k=0; k < list.size(); k++) {
 					PendingOrder po = list.get(k);
 					double stopPrice = po.getPrice() + n/2;
 					order.UpdatePendingOrder(po, po.getAmount(), stopPrice);
 					//System.out.println(String.format("adjust stop price to %f", stopPrice));
-				}
+				}*/
 				
 				state++;
 				//System.out.println(String.format("adding unit. market buy %d at %f", unit, entryPrice));
