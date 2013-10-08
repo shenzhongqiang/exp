@@ -169,8 +169,8 @@ public class Report {
 			Iterator<ClosedTransaction> i = closed.iterator();
 			while(i.hasNext()) {
 				ClosedTransaction ct = i.next();
-				writeClosedTransaction(wb, s, ct);
-				totalPl = ct.getTotalPl();
+				totalPl += ct.getPl();
+				writeClosedTransaction(wb, s, ct, totalPl);
 			}
 			
 			writeProfitLossDetails(wb, s, closed);
@@ -212,7 +212,7 @@ public class Report {
 	}
 	
 	public static void writeClosedTransaction(Workbook wb, Sheet s, 
-			ClosedTransaction ct) {
+			ClosedTransaction ct, double totalPl) {
 		int rowEnd = s.getLastRowNum();
 		Row r = s.createRow((short)rowEnd + 1);
 		CreationHelper createHelper = wb.getCreationHelper();
@@ -230,7 +230,7 @@ public class Report {
 		cellCloseTime.setCellStyle(dateStyle);
 		r.createCell(6).setCellValue(ct.getClosePrice());
 		r.createCell(7).setCellValue(ct.getPl());
-		r.createCell(8).setCellValue(ct.getTotalPl());
+		r.createCell(8).setCellValue(totalPl);
 	}
 	
 	public static void adjustColumnWidth(Workbook wb, Sheet s) {

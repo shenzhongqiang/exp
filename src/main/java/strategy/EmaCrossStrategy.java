@@ -133,22 +133,26 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 			double ask = askTs.get(i).getClose();
 			double bid = bidTs.get(i).getClose();
 			
-			boolean isCrossed = prevEma8 < prevEma21 && currEma8 > currEma21;
+			boolean crossedUp = prevEma8 < prevEma21 && currEma8 > currEma21;
+			boolean crossedDown = prevEma8 > prevEma21 && currEma8 < currEma21;
 			boolean isUpTrend = currEma21 > currEma55;
-			if(state == 0 && isCrossed && isUpTrend) {
+			if(state == 0 && crossedUp && isUpTrend) {
 				// buy one unit
 				double rangeLow = low8.getRangeLow(i);
 				double rangeHigh = high21.getRangeHigh(i);
 				
 				stopPrice = rangeLow - (ask - rangeLow) * 0.2;
 				takeProfit = rangeHigh * 2 - rangeLow;
+				double rr = (takeProfit - ask) / (ask - stopPrice);
 				r = ask - stopPrice;
-				String entryTime = askTs.get(i).getStart();
-				unit = (int) (0.02 * order.getAccount().getBalance() / (ask - stopPrice) / 1000);
-				this.positionId = order.MarketBuy(product, entryTime, ask, unit);
-				order.StopSell(product, entryTime, stopPrice, unit, this.positionId);
-				state = 1;
-				System.out.println(String.format("r:%f, rangeLow:%f. market buy %d at %f. SL at %f. TP at %f", r, rangeLow, unit, ask, stopPrice, takeProfit));
+				if(rr >= 1.5 && r > 0.0010) {
+					String entryTime = askTs.get(i).getStart();
+					unit = (int) (0.02 * order.getAccount().getBalance() / (ask - stopPrice) / 1000);
+					this.positionId = order.MarketBuy(product, entryTime, ask, unit);
+					order.StopSell(product, entryTime, stopPrice, unit, this.positionId);
+					state = 1;
+					System.out.println(String.format("r:%f, rr:%f, rangeLow:%f, rangeHigh:%f. market buy %d at %f. SL at %f. TP at %f", r, rr, rangeLow, rangeHigh, unit, ask, stopPrice, takeProfit));
+				}
 			}
 			
 			else if(state == 1) {
@@ -159,6 +163,10 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 					order.MarketSell(product, exitTime, this.takeProfit, this.unit, this.positionId);
 					order.CancelAllPendingOrders(this.positionId);
 				}
+				/*else if(crossedDown) {
+					order.MarketSell(product, exitTime, bid, this.unit, this.positionId);
+					order.CancelAllPendingOrders(this.positionId);
+				}*/
 				/*
 				else {
 					if(high > stopPrice + 2 * r) {

@@ -482,8 +482,8 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		startTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		Calendar endTime = (Calendar)startTime.clone();
 		
-		startTime.set(2013, 6, 1, 0, 0, 0);
-		endTime.set(2013, 6, 15, 0, 0, 0);
+		startTime.set(2013, 0, 1, 0, 0, 0);
+		endTime.set(2013, 2, 31, 0, 0, 0);
 		
 		FXCMHisMarketDataMiner miner = new FXCMHisMarketDataMiner("rkichenama", "1311016", "Demo", startTime, endTime);
 		miner.login();
