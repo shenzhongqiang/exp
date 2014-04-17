@@ -1,4 +1,4 @@
-package report;
+package main.java.report;
 import java.util.*;
 import java.io.*;
 import org.hibernate.Query;
@@ -6,7 +6,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.*;
-import model.*;
+import main.java.model.*;
 import java.text.SimpleDateFormat;
 
 /**

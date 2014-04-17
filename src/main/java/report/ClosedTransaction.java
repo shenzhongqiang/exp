@@ -1,4 +1,4 @@
-package report;
+package main.java.report;
 
 import java.text.SimpleDateFormat;
 import java.util.*;

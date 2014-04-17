@@ -1,11 +1,11 @@
-package strategy;
+package main.java.strategy;
 
 import java.util.*;
 
-import data.MarketData;
-import model.*;
-import order.Order;
-import subscriber.Subscriber;
+import main.java.data.MarketData;
+import main.java.model.*;
+import main.java.order.Order;
+import main.java.subscriber.Subscriber;
 
 public abstract class Strategy implements Subscriber {
 	protected Order order;

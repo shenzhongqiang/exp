@@ -1,12 +1,12 @@
-package strategy;
+package main.java.strategy;
 
 import java.util.*;
 
-import data.MarketData;
-import indicator.*;
-import model.*;
-import subscriber.*;
-import order.Order;
+import main.java.data.MarketData;
+import main.java.indicator.*;
+import main.java.model.*;
+import main.java.subscriber.*;
+import main.java.order.Order;
 
 /**
  * Ideal Turtle Strategy

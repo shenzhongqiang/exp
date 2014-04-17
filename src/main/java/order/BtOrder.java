@@ -1,4 +1,4 @@
-package order;
+package main.java.order;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -7,8 +7,8 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import model.*;
-import data.*;
+import main.java.model.*;
+import main.java.data.*;
 
 import java.text.ParseException;
 

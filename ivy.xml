@@ -1,0 +1,9 @@
+<ivy-module version="2.0">
+    <info organisation="org.apache" module="hello-ivy"/>
+    <dependencies>
+        <dependency org="net.sf.opencsv" name="opencsv" rev="2.3"/>
+        <dependency org="org.hibernate" name="hibernate-core" rev="3.6.10.Final"/>
+        <dependency org="org.apache.poi" name="poi" rev="3.10-FINAL"/>
+        <dependency org="junit" name="junit" rev="4.11"/>
+    </dependencies>
+</ivy-module>

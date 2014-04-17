@@ -1,8 +1,8 @@
-package order;
+package main.java.order;
 
-import model.*;
+import main.java.model.*;
+import main.java.subscriber.*;
 import java.util.*;
-import subscriber.*;
 import org.hibernate.Session;
 
 public abstract class Order implements Subscriber {

@@ -1,8 +1,8 @@
-package indicator;
+package main.java.indicator;
 
 import java.util.ArrayList;
 
-import data.MarketData;
+import main.java.data.MarketData;
 
 /**
  * Get high price of the specified number of days

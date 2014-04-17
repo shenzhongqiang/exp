@@ -1,7 +1,7 @@
-package indicator;
+package main.java.indicator;
 import java.util.*;
 
-import data.MarketData;
+import main.java.data.MarketData;
 
 /**
  * Calculate EMA
