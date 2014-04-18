@@ -6,10 +6,16 @@
     <property name="test.classes.dir" location="${build.dir}/test-classes" />
     <property name="ivy.reports.dir" location="${build.dir}/ivy-reports" />
     <property name="test.reports.dir" location="${build.dir}/test-reports" />
+    <property name="hibernate.dir" location="src/main/resources" />
     <path id="compile.classpath">
         <fileset dir="lib">
             <include name="*.jar"/>
         </fileset>
+    </path>
+    <path id="run.classpath">
+        <path refid="compile.classpath" />
+        <pathelement location="${classes.dir}" />
+        <pathelement location="${hibernate.dir}" />
     </path>
     <target name="init" description="--> resolve and retrieve dependencies with ivy">
         <ivy:resolve />
@@ -24,5 +30,13 @@
 
     <target name="compile" depends="init">
         <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" debug="true" classpathref="compile.classpath" />
+    </target>
+
+    <target name="execute" depends="compile">
+        <java classname="main.java.backtest.BackTesting" classpathref="run.classpath" />
+    </target>
+
+    <target name="getdata" depends="compile">
+        <java classname="main.java.marketdataminer.FXCMHisMarketDataMiner" classpathref="run.classpath" />
     </target>
 </project>

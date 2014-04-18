@@ -29,7 +29,7 @@ public abstract class Order implements Subscriber {
 	public abstract void CancelAllPendingOrders(int positionId);
 	public abstract void CancelSellStopOrders(int positionId);
 	public abstract void CancelSellLimitOrders(int positionId);
-	
+
 	public Account getAccount() {
 		return this.account;
 	}

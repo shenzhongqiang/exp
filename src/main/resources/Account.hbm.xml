@@ -1,23 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?> 
-<!DOCTYPE hibernate-mapping 
- PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
- "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"> 
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping
+ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping> 
+<hibernate-mapping>
 
-    <class name="model.Account" table="Account"> 
+    <class name="model.Account" table="Account">
 
-        <id name="id" column="id" type="integer"> 
-            <generator class="increment"/> 
-        </id> 
+        <id name="id" column="id" type="integer">
+            <generator class="increment"/>
+        </id>
 
-        <property name="floatPl" column="floatPl" type="double"/> 
+        <property name="floatPl" column="floatPl" type="double"/>
 		<property name="floatRisk" column="floatRisk" type="double"/>
-		<property name="maxRiskPercent" column="maxRiskPercent" type="double"/> 
+		<property name="maxRiskPercent" column="maxRiskPercent" type="double"/>
 		<property name="dollarPerPoint" column="dollarPerPoint" type="double"/>
 		<property name="balance" column="balance" type="double"/>
 		<property name="equity" column="equity" type="double"/>
-		<property name="usedMargin" column="usedMargin" type="double"/>   
-    </class> 
+		<property name="usedMargin" column="usedMargin" type="double"/>
+    </class>
 
 </hibernate-mapping>

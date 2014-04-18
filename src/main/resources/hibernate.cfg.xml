@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN" 
-"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+<!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 
 <hibernate-configuration>
 	<session-factory>
 		<property name="show_sql">false</property>
 		<property name="format_sql">true</property>
-		<property name="dialect">dialect.SQLiteDialect</property>
+		<property name="dialect">main.java.dialect.SQLiteDialect</property>
 		<property name="connection.driver_class">org.sqlite.JDBC</property>
 		<property name="connection.url">jdbc:sqlite:backtesting.db</property>
 		<property name="connection.username"></property>
 		<property name="connection.password"></property>
-		
+
 		<mapping resource="TransactionHistory.hbm.xml"/>
 		<mapping resource="Position.hbm.xml"/>
 		<mapping resource="Account.hbm.xml"/>

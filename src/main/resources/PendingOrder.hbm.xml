@@ -1,23 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?> 
-<!DOCTYPE hibernate-mapping 
- PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN" 
- "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd"> 
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping
+ PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+ "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 
-<hibernate-mapping> 
+<hibernate-mapping>
 
-    <class name="model.PendingOrder" table="PendingOrder"> 
+    <class name="model.PendingOrder" table="PendingOrder">
 
-        <id name="id" column="id" type="integer"> 
-            <generator class="increment"/> 
-        </id> 
+        <id name="id" column="id" type="integer">
+            <generator class="increment"/>
+        </id>
 
-        <many-to-one name="account" column="account_id" class="model.Account"/> 
-        <property name="product" column="product" type="string"/> 
-		<property name="amount" column="amount" type="integer"/> 
-		<property name="type" column="type" type="string"/> 
+        <many-to-one name="account" column="account_id" class="model.Account"/>
+        <property name="product" column="product" type="string"/>
+		<property name="amount" column="amount" type="integer"/>
+		<property name="type" column="type" type="string"/>
 		<property name="price" column="price" type="double"/>
 		<property name="time" column="time" type="date"/>
 		<many-to-one name="position" column="position_id" class="model.Position"/>
-    </class> 
+    </class>
 
 </hibernate-mapping>

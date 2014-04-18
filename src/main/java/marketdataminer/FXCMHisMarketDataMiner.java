@@ -39,7 +39,7 @@ import com.fxcm.messaging.ITransportable;
 
 /**
  * Example of how to request and process historical rate data from the Java API
- * 
+ *
  * @author rkichenama
  */
 public class FXCMHisMarketDataMiner implements IGenericMessageListener,
@@ -63,7 +63,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	private Calendar endDate;
 
 	private String terminal;
-	
+
 	private static PrintWriter output = new PrintWriter((OutputStream) System.out, true);
 
 	public PrintWriter getOutput() {
@@ -77,7 +77,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	/**
 	 * Creates a new JavaFixHistoryMiner with credentials with configuration
 	 * file
-	 * 
+	 *
 	 * @param username
 	 * @param password
 	 * @param terminal
@@ -102,7 +102,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Creates a new JavaFixHistoryMiner with credentials and no configuration file
-	 * 
+	 *
 	 * @param username
 	 * @param password
 	 * @param terminal - which terminal to login into, dependent on the type of account, case sensitive
@@ -124,10 +124,10 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Attempt to login with credentials supplied in constructor
-	 * 
+	 *
 	 * @param genericMessageListener - the listener object for trading events
 	 * @param statusMessageListener - the listener object for status events
-	 * 
+	 *
 	 * @return true if login successful, false if not
 	 */
 	public boolean login(IGenericMessageListener genericMessageListener,
@@ -174,7 +174,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Attempt to logout, removing the supplied listeners prior to disconnection
-	 * 
+	 *
 	 * @param genericMessageListener - the listener object for trading events
 	 * @param statusMessageListener - the listener object for status events
 	 */
@@ -206,7 +206,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Send a fully formed order to the API and wait for the response.
-	 * 
+	 *
 	 * @return the market order number of placed trade, NONE if the trade did
 	 *         not execute, null on error
 	 */
@@ -230,7 +230,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	/**
 	 * Implementing IStatusMessageListener to capture and process messages sent
 	 * back from API
-	 * 
+	 *
 	 * @param status
 	 *            - status message received by API
 	 */
@@ -255,7 +255,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	/**
 	 * Implementing IGenericMessageListener to capture and process messages sent
 	 * back from API
-	 * 
+	 *
 	 * @param message
 	 *            - message received for processing by API
 	 */
@@ -287,7 +287,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Separate function to handle collateral report requests
-	 * 
+	 *
 	 * @param cr - message interpreted as an instance of CollateralReport
 	 */
 	public void messageArrived(CollateralReport cr) {
@@ -303,7 +303,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Separate function to handle the trading session status updates and pull the trading instruments
-	 * 
+	 *
 	 * @param tss - the message interpreted as a TradingSessionStatus instance
 	 */
 	public void messageArrived(TradingSessionStatus tss) {
@@ -315,12 +315,12 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 			// attempt to set up the historical market data request
 		}
 	}
-	
+
 	public void getMarketData() throws Exception {
 		while(this.tradeSessionStatus == null){
 			Thread.sleep(500);
 		}
-		
+
 		while(hasNext()){
 			sendNextRequest();
 			recordMarketData();
@@ -333,7 +333,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	/**
 	 * Separate function to handle the rejection of a market data historical
 	 * snapshot
-	 * 
+	 *
 	 * @param mdrr - message interpreted as an instance of MarketDataRequestReject
 	 */
 	public void messageArrived(MarketDataRequestReject mdrr) {
@@ -345,11 +345,11 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 	/**
 	 * Separate function to handle the receipt of market data snapshots
-	 * 
+	 *
 	 * Current dealing rates are retrieved through the same class as historical
 	 * requests. The difference is that historical requests are 'answers' to a
 	 * specific request.
-	 * 
+	 *
 	 * @param mds
 	 */
 	public void messageArrived(MarketDataSnapshot mds) {
@@ -371,7 +371,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	private boolean hasNext(){
 		return currentDate.compareTo(endDate) <= 0;
 	}
-	
+
 	private void sendNextRequest() throws Exception {
         // get one day data at once
 		// create a new market data request
@@ -384,7 +384,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		mdr.setFXCMTimingInterval(FXCMTimingIntervalFactory.MIN5);
 		// set the type set for the data candles
 		mdr.setMDEntryTypeSet(MarketDataRequest.MDENTRYTYPESET_ALL);
-		
+
 		int timeframe = 5;
 		int total = 1440;
 		int loop = (int)Math.ceil(total / (300.0 * timeframe));
@@ -401,7 +401,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 			else {
 				end.add(Calendar.MINUTE, interval);
 			}
-			
+
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			ft.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 			System.out.println("start:" + ft.format(start.getTime()));
@@ -413,7 +413,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 			mdr.setFXCMEndTime(new UTCTimeOnly(end.getTime()));
 			// set the instrument on which the we want the historical data
 			mdr.addRelatedSymbol(tradeSessionStatus.getSecurity(TEST_CURRENCY));
-			
+
 			output.println("request marketdata start date: " + ft.format(currentDate.getTime()));
 			output.println("request marketdata end date: " + ft.format(currentEndDate.getTime()));
 			// send the request
@@ -422,7 +422,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 			Thread.sleep(2500);
 		}
 	}
-	
+
 	private void recordMarketData() throws Exception {
 		int wait = 1;
 		while(!requestComplete){
@@ -430,11 +430,11 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 			Thread.sleep(500);
 			wait++;
 		}
-			
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-z");
 		sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		// set filename
-		String filename = String.format("%s\\FX_FXCM_%s_%s_%s.csv", 
+		String filename = String.format("%s\\FX_FXCM_%s_%s_%s.csv",
 				BASE_DIR, terminal, TEST_CURRENCY.replaceAll("/", "-"), sdf.format(this.currentDate.getTime()));
 		// give the table a header
 		output.println("candle History for " + TEST_CURRENCY + ". interval ");
@@ -455,7 +455,7 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 				// convert the key to a Date
 				Date startTime = candleData.getOpenTimestamp().toDate();
 				Date endTime = candleData.getCloseTimestamp().toDate();
-				
+
 				if (! endTime.after(this.currentEndDate.getTime())) {
 					// print out the historicalRate table data
 					String[] snapShotArray = new String[] {
@@ -481,15 +481,15 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		Calendar startTime = Calendar.getInstance();
 		startTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		Calendar endTime = (Calendar)startTime.clone();
-		
+
 		startTime.set(2013, 0, 1, 0, 0, 0);
 		endTime.set(2013, 2, 31, 0, 0, 0);
-		
+
 		FXCMHisMarketDataMiner miner = new FXCMHisMarketDataMiner("rkichenama", "1311016", "Demo", startTime, endTime);
 		miner.login();
 		miner.retrieveAccounts();
 		miner.getMarketData();
-		
+
 		miner.logout();
 	}
 }

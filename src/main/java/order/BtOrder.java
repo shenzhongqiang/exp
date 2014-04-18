@@ -13,17 +13,17 @@ import main.java.data.*;
 import java.text.ParseException;
 
 /**
- * Back-testing order. 
+ * Back-testing order.
  * Used to open market order or pending order.
  * Order, Position and Transaction info is stored in the database.
- * 
+ *
  * @author Zhongqiang Shen
  */
 public class BtOrder extends Order  {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param session - hibernate session, used to interact with database
 	 * @param account - the account {@link Account} that the order actions are associated with
 	 */
@@ -31,19 +31,19 @@ public class BtOrder extends Order  {
 		this.session = session;
 		this.account = account;
 	}
-	
+
 	/**
 	 * Check if there is open position
-	 * 
+	 *
 	 * @param product - product (e.g. EURUSD)
-	 * @return true if has open position, otherwise false 
+	 * @return true if has open position, otherwise false
 	 */
 	public boolean HasPosition(String product) {
 		Transaction tx = this.session.beginTransaction();
 		Query q = session.createQuery("from Position where account.id = :id and product = :product");
 		q.setParameter("id", account.getId());
 		q.setParameter("product",product);
-		
+
 		List list = q.list();
 		boolean hasPosition = false;
 		if(list.size() > 0) {
@@ -52,11 +52,11 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return hasPosition;
 	}
-	
+
 	/**
 	 * Get open positions of a specified product.
 	 * For a certain product, there should be at most one open position.
-	 * 
+	 *
 	 * @param product - product (e.g. EURUSD)
 	 * @return Position {@link Position} of that product
 	 */
@@ -73,10 +73,10 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return p;
 	}
-	
+
 	/**
 	 * Get position of the specified position id
-	 * 
+	 *
 	 * @param positionId - id of the position
 	 */
 	public Position getPosition(int positionId) {
@@ -92,10 +92,10 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return p;
 	}
-	
+
 	/**
 	 * Open long position - open market buy order
-	 * 
+	 *
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param price - the ask price to buy
@@ -119,13 +119,13 @@ public class BtOrder extends Order  {
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
 		}
-		
+
 		return 0;
 	}
-	
+
 	/**
-	 * Close short position - open market buy order 
-	 * 
+	 * Close short position - open market buy order
+	 *
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param price - the ask price to buy
@@ -135,7 +135,7 @@ public class BtOrder extends Order  {
 	 */
 	public int MarketBuy(String product, String strTime, double price, int amount, int positionId) {
 		Position p = this.getPosition(positionId);
-		
+
 		if(p != null) {
 			int totalAmount = p.getAmount() + amount;
 			if(totalAmount == 0) {
@@ -152,7 +152,7 @@ public class BtOrder extends Order  {
 			else {
 				System.out.println("cannot close amount more than the amount opened");
 			}
-			double pl = (price - p.getPrice()) * 1000 * amount; 
+			double pl = (price - p.getPrice()) * 1000 * amount;
 			this.SaveBuyTransaction(strTime, product, price, amount, positionId, pl);
 			System.out.println(String.format("%s - buy %d mini lot %s at %f", strTime, amount, product, price));
 			return positionId;
@@ -163,10 +163,10 @@ public class BtOrder extends Order  {
 
 		return 0;
 	}
-	
+
 	/**
 	 * Open short position - open market sell order
-	 * 
+	 *
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param price - the bid price to sell
@@ -190,24 +190,24 @@ public class BtOrder extends Order  {
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
 		}
-		
+
 		return 0;
 	}
-	
-	
+
+
 	/**
 	 * Close long position - open market sell order
-	 * 
+	 *
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param price - the bid price to sell
 	 * @param amount - amount to sell
-	 * @param positionId - position to close 
+	 * @param positionId - position to close
 	 * @return position id
 	 */
 	public int MarketSell(String product, String strTime, double price, int amount, int positionId) {
 		Position p = this.getPosition(positionId);
-		
+
 		if(p != null) {
 			int totalAmount = p.getAmount() - amount;
 			if(totalAmount == 0) {
@@ -233,12 +233,12 @@ public class BtOrder extends Order  {
 		else {
 			System.out.println("not found position");
 		}
-		
+
 		return 0;
 	}
 	/**
 	 * Save buy transaction
-	 * 
+	 *
 	 * @param strTime - time of when the transaction is saved
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param price - the bid price to buy
@@ -250,7 +250,7 @@ public class BtOrder extends Order  {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
-		
+
 			TransactionHistory th = new TransactionHistory(account, time, product, price, amount, positionId, pl);
 			account.setBalance(account.getBalance() + pl);
 			Transaction tx = this.session.beginTransaction();
@@ -264,10 +264,10 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Save sell transaction
-	 * 
+	 *
 	 * @param strTime - time of when the transaction is saved
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param price - the bid price to sell
@@ -279,7 +279,7 @@ public class BtOrder extends Order  {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
-		
+
 			TransactionHistory th = new TransactionHistory(account, time, product, price, amount * -1, positionId, pl);
 			account.setBalance(account.getBalance() + pl);
 			Transaction tx = this.session.beginTransaction();
@@ -293,16 +293,16 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Open stop buy order
-	 * 
+	 *
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param stopPrice - the stop price to buy
 	 * @param positionId - id of position, 0 means open position, otherwise close position
 	 */
-	public void StopBuy(String product, String strTime, double stopPrice, int amount, int positionId) {		
+	public void StopBuy(String product, String strTime, double stopPrice, int amount, int positionId) {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
@@ -317,10 +317,10 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Open limit buy order
-	 * 
+	 *
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param limitPrice - the limit price to buy
@@ -342,10 +342,10 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Open stop sell order
-	 * 
+	 *
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param stopPrice - the stop price to sell
@@ -367,10 +367,10 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Open limit sell order
-	 * 
+	 *
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param strTime - time of when the order is submitted
 	 * @param limitPrice - the limit price to sell
@@ -378,7 +378,7 @@ public class BtOrder extends Order  {
 	 * @param positionId - id of position, 0 means open position, otherwise close position
 	 */
 	public void LimitSell(String product, String strTime, double limitPrice, int amount, int positionId) {
-		
+
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			Date time = ft.parse(strTime);
@@ -393,12 +393,12 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Get pending orders of a position
-	 * 
+	 *
 	 * @param positionId - id of the position
-	 * @return list {@link List} of pending orders 
+	 * @return list {@link List} of pending orders
 	 */
 	public List getPendingOrders(int positionId) {
 		Transaction tx = session.beginTransaction();
@@ -408,12 +408,12 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return list;
 	}
-		
+
 	/**
 	 * Get stop buy orders of a position
-	 * 
+	 *
 	 * @param positionId - id of position
-	 * @return list {@link List} of stop buy orders 
+	 * @return list {@link List} of stop buy orders
 	 */
 	public List getStopBuyOrders(int positionId) {
 		Transaction tx = session.beginTransaction();
@@ -424,12 +424,12 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return list;
 	}
-	
+
 	/**
 	 * Get limit buy orders of a position
-	 * 
+	 *
 	 * @param positionId - id of position
-	 * @return list {@link List} of limit buy orders 
+	 * @return list {@link List} of limit buy orders
 	 */
 	public List getLimitBuyOrders(int positionId) {
 		Transaction tx = session.beginTransaction();
@@ -440,12 +440,12 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return list;
 	}
-	
+
 	/**
 	 * Get stop sell orders of a position
-	 * 
+	 *
 	 * @param positionId - id of position
-	 * @return list {@link List} of stop sell orders 
+	 * @return list {@link List} of stop sell orders
 	 */
 	public List getStopSellOrders(int positionId) {
 		Transaction tx = session.beginTransaction();
@@ -456,12 +456,12 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return list;
 	}
-	
+
 	/**
 	 * Get limit sell orders of a position
-	 * 
+	 *
 	 * @param positionId - id of position
-	 * @return list {@link List} of limit sell orders 
+	 * @return list {@link List} of limit sell orders
 	 */
 	public List getLimitSellOrders(int positionId) {
 		Transaction tx = session.beginTransaction();
@@ -472,12 +472,12 @@ public class BtOrder extends Order  {
 		tx.commit();
 		return list;
 	}
-	
+
 	/**
 	 * Update amount and price of the specified pending order
-	 * 
+	 *
 	 * @param po - the specified pending order
-	 * @param amount - new amount 
+	 * @param amount - new amount
 	 * @param price - new price
 	 */
 	public void UpdatePendingOrder(PendingOrder po, int amount, double price) {
@@ -487,10 +487,10 @@ public class BtOrder extends Order  {
 		session.update(po);
 		tx.commit();
 	}
-	
+
 	/**
 	 * Cancel the specified pending order
-	 * 
+	 *
 	 * @param po - the specified pending order
 	 */
 	public void CancelPendingOrder(PendingOrder po) {
@@ -499,10 +499,10 @@ public class BtOrder extends Order  {
 		tx.commit();
 	}
 
-	
+
 	/**
 	 * Cancel all pending orders of the specified position
-	 * 
+	 *
 	 * @param positionId - id of position
 	 */
 	public void CancelAllPendingOrders(int positionId) {
@@ -513,10 +513,10 @@ public class BtOrder extends Order  {
 		q.executeUpdate();
 		tx.commit();
 	}
-	
+
 	/**
 	 * Cancel all stop sell orders of the specified position
-	 * 
+	 *
 	 * @param positionId - id of position
 	 */
 	public void CancelSellStopOrders(int positionId) {
@@ -527,10 +527,10 @@ public class BtOrder extends Order  {
 		q.executeUpdate();
 		tx.commit();
 	}
-	
+
 	/**
 	 * Cancel all limit sell orders of the specified position
-	 * 
+	 *
 	 * @param positionId - id of position
 	 */
 	public void CancelSellLimitOrders(int positionId) {
@@ -541,10 +541,10 @@ public class BtOrder extends Order  {
 		q.executeUpdate();
 		tx.commit();
 	}
-	
+
 	/**
 	 * When new market data comes in, check for all pending orders to see if any actions need to be taken
-	 * 
+	 *
 	 * @param product - the specified product (e.g. EURUSD)
 	 * @param bid - the bid {@link MarketData}
 	 * @param ask - the ask {@link MarketData}
@@ -556,11 +556,11 @@ public class BtOrder extends Order  {
 		q.setParameter("product", product);
 		List<PendingOrder> list = q.list();
 		tx.commit();
-	
+
 		try {
 			for(int k = 0; k < list.size(); k++) {
 				PendingOrder po = list.get(k);
-				
+
 				if(po.getAmount() > 0 && po.getType() == "limit") { // buy limit
 					if(ask.getLow() <= po.getPrice()) {
 						double price = Math.min(ask.getHigh(), po.getPrice());
@@ -585,7 +585,7 @@ public class BtOrder extends Order  {
 						}
 						this.CancelPendingOrder(po);
 						//System.out.println("buy stop turns to market buy");
-					}	
+					}
 				}
 				else if(po.getAmount() < 0 && po.getType() == "limit") { //sell limit
 					if(bid.getHigh() >= po.getPrice()) {
@@ -614,11 +614,11 @@ public class BtOrder extends Order  {
 					}
 				}
 			}
-			
+
 		}
 		catch(Exception ex) {
 			System.out.println(ex.getMessage());
 		}
-		
+
 	}
 }

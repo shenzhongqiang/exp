@@ -11,14 +11,14 @@ import main.java.order.Order;
 
 /**
  * EMA Cross Strategy
- * 
+ *
  * @author Zhongqiang Shen
  */
 public class EmaCrossStrategy extends Strategy implements Subscriber {
-	// state 
+	// state
 	// 0 - no open position
 	// 1 - has position
-	
+
 	private int state = 0;
 	private double stopPrice = 0;
 	private double takeProfit = 0;
@@ -32,10 +32,10 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	private RangeLow low8;
 	private RangeHigh high21;
 	private int positionId = 0;
-	
+
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param order - the specified order {@link Order}
 	 */
 	public EmaCrossStrategy(Order order) {
@@ -50,10 +50,10 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 		this.low8 = new RangeLow(8);
 		this.high21 = new RangeHigh(21);
 	}
-	
+
 	/**
 	 * Update market data and run strategy
-	 * 
+	 *
 	 * @param product - the specified product (e.g. EURUSD)
 	 * @param bid - the bid {@link MarketData}
 	 * @param ask - the ask {@link MarketData}
@@ -71,21 +71,21 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 		high21.Update(bid);
 		Run(product);
 	}
-	
+
 	/**
 	 * Run strategy
-	 * 
+	 *
 	 * @param product - the specified product (e.g. EURUSD)
 	 */
 	public void Run(String product) {
 		int i = bidTs.size() - 1;
 
-		
+
 		/*
-		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f", 
-				bidTs.get(i).getClose(), 
-				bidTs.get(i).getLow(), 
-				bidTs.get(i).getHigh(), 
+		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f",
+				bidTs.get(i).getClose(),
+				bidTs.get(i).getLow(),
+				bidTs.get(i).getHigh(),
 				bidTs.get(i).getOpen(),
 				askTs.get(i).getHigh()));
 		*/
@@ -93,14 +93,14 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 		if(i < 100) {
 			return;
 		}
-		
+
 		try {
 			//check if has position
 			boolean hasPosition = order.HasPosition(product);
 			if(!hasPosition) {
 				state = 0;
 			}
-			
+
 			// get day of current bar. if it is Friday, close position before end of day.
 			String start = bidTs.get(i).getStart();
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -122,8 +122,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 			catch(ParseException e) {
 				System.out.println("Unable to parse date using " + ft);
 			}
-			
-			
+
+
 			double prevEma8 = ema8.getEma(i - 1);
 			double prevEma21 = ema21.getEma(i - 1);
 			double currEma8 = ema8.getEma(i);
@@ -132,7 +132,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 			double currEma144 = ema144.getEma(i);
 			double ask = askTs.get(i).getClose();
 			double bid = bidTs.get(i).getClose();
-			
+
 			boolean crossedUp = prevEma8 < prevEma21 && currEma8 > currEma21;
 			boolean crossedDown = prevEma8 > prevEma21 && currEma8 < currEma21;
 			boolean isUpTrend = currEma21 > currEma55;
@@ -140,7 +140,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				// buy one unit
 				double rangeLow = low8.getRangeLow(i);
 				double rangeHigh = high21.getRangeHigh(i);
-				
+
 				stopPrice = rangeLow - (ask - rangeLow) * 0.2;
 				takeProfit = rangeHigh * 2 - rangeLow;
 				double rr = (takeProfit - ask) / (ask - stopPrice);
@@ -154,11 +154,11 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 					System.out.println(String.format("r:%f, rr:%f, rangeLow:%f, rangeHigh:%f. market buy %d at %f. SL at %f. TP at %f", r, rr, rangeLow, rangeHigh, unit, ask, stopPrice, takeProfit));
 				}
 			}
-			
+
 			else if(state == 1) {
 				double high = askTs.get(i).getHigh();
 				String exitTime = bidTs.get(i).getStart();
-				
+
 				if(high > takeProfit) {
 					order.MarketSell(product, exitTime, this.takeProfit, this.unit, this.positionId);
 					order.CancelAllPendingOrders(this.positionId);
@@ -175,18 +175,18 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 						order.UpdatePendingOrder(po, po.getAmount(), stopPrice + r);
 						stopPrice = stopPrice + r;
 					}
-					
+
 				}
 				*/
-				
+
 				//System.out.println(String.format("adding unit. market buy %d at %f", unit, entryPrice));
 			}
-			
+
 		}
 		catch(Exception ex) {
 			System.out.println(ex.getCause());
 		}
 	}
-	
+
 
 }
