@@ -5,7 +5,7 @@
 
 <hibernate-mapping>
 
-    <class name="model.Account" table="Account">
+    <class name="main.java.model.Account" table="Account">
 
         <id name="id" column="id" type="integer">
             <generator class="increment"/>

@@ -5,7 +5,7 @@
 
 <hibernate-mapping>
 
-    <class name="model.Position" table="Position">
+    <class name="main.java.model.Position" table="Position">
 
         <id name="id" column="id" type="integer">
             <generator class="increment"/>
@@ -20,7 +20,7 @@
 			<key>
 				<column name="position_id" not-null="false" />
 			</key>
-			<one-to-many class="model.PendingOrder" />
+			<one-to-many class="main.java.model.PendingOrder" />
 		</set>
     </class>
 

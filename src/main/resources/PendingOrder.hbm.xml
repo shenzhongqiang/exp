@@ -5,19 +5,19 @@
 
 <hibernate-mapping>
 
-    <class name="model.PendingOrder" table="PendingOrder">
+    <class name="main.java.model.PendingOrder" table="PendingOrder">
 
         <id name="id" column="id" type="integer">
             <generator class="increment"/>
         </id>
 
-        <many-to-one name="account" column="account_id" class="model.Account"/>
+        <many-to-one name="account" column="account_id" class="main.java.model.Account"/>
         <property name="product" column="product" type="string"/>
 		<property name="amount" column="amount" type="integer"/>
 		<property name="type" column="type" type="string"/>
 		<property name="price" column="price" type="double"/>
 		<property name="time" column="time" type="date"/>
-		<many-to-one name="position" column="position_id" class="model.Position"/>
+		<many-to-one name="position" column="position_id" class="main.java.model.Position"/>
     </class>
 
 </hibernate-mapping>
