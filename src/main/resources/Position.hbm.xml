@@ -10,7 +10,7 @@
         <id name="id" column="id" type="integer">
             <generator class="increment"/>
         </id>
-		<many-to-one name="account" column="account_id" class="model.Account"/>
+		<many-to-one name="account" column="account_id" class="main.java.model.Account"/>
         <property name="product" column="product" type="string"/>
 		<property name="amount" column="amount" type="integer"/>
 		<property name="type" column="type" type="string"/>

@@ -11,6 +11,7 @@
 		<property name="connection.url">jdbc:sqlite:backtesting.db</property>
 		<property name="connection.username"></property>
 		<property name="connection.password"></property>
+        <property name="javax.persistence.validation.mode">none</property>
 
 		<mapping resource="TransactionHistory.hbm.xml"/>
 		<mapping resource="Position.hbm.xml"/>
