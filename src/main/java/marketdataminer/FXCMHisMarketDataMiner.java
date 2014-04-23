@@ -46,8 +46,8 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		IStatusMessageListener {
 	private static final String server = "http://www.fxcorporate.com/Hosts.jsp";
 	private static final String TEST_CURRENCY = "EUR/USD";
-	private static final String BASE_DIR = "F:\\Documents and Settings\\Zhongqiang Shen\\My Documents\\project\\exp\\marketdata\\FX_FXCM_Demo_EUR-USD_2013_EST_5";
 
+    private String basedir;
 	private FXCMLoginProperties login;
 	private IGateway gateway;
 	private String currentRequest;
@@ -83,11 +83,14 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	 * @param terminal
 	 *            - which terminal to login into, dependent on the type of
 	 *            account, case sensitive
-	 * @param server - url, like 'http://www.fxcorporate.com/Hosts.jsp'
+	 * @param basedir - directory to store historical data
+	 * @param startDate - start date to download historical data
+	 * @param endDate - end date to download historical data
 	 * @param file - a local file used to define configuration
 	 */
 	public FXCMHisMarketDataMiner(String username, String password,
-			String terminal, Calendar startDate, Calendar endDate, String file) {
+			String terminal, String basedir, Calendar startDate, Calendar endDate, String file) {
+        this.basedir = basedir;
 		this.terminal = terminal;
 		// if file is not specified
 		if (file == null)
@@ -109,9 +112,9 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	 * @param server - url, like 'http://www.fxcorporate.com/Hosts.jsp'
 	 */
 	public FXCMHisMarketDataMiner(String username, String password,
-			String terminal, Calendar startDate, Calendar endDate) {
+			String terminal, String basedir, Calendar startDate, Calendar endDate) {
 		// call the proper constructor
-		this(username, password, terminal, startDate, endDate, null);
+		this(username, password, terminal, basedir, startDate, endDate, null);
 	}
 
 	/**
@@ -404,8 +407,8 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			ft.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-			System.out.println("start:" + ft.format(start.getTime()));
-			System.out.println("end:" + ft.format(end.getTime()));
+			//System.out.println("start:" + ft.format(start.getTime()));
+			//System.out.println("end:" + ft.format(end.getTime()));
 			// configure the start and end dates set the dates and times for the market data request
 			mdr.setFXCMStartDate(new UTCDate(start.getTime()));
 			mdr.setFXCMStartTime(new UTCTimeOnly(start.getTime()));
@@ -434,8 +437,8 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-z");
 		sdf.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		// set filename
-		String filename = String.format("%s\\FX_FXCM_%s_%s_%s.csv",
-				BASE_DIR, terminal, TEST_CURRENCY.replaceAll("/", "-"), sdf.format(this.currentDate.getTime()));
+		String filename = String.format("%s/FX_FXCM_%s_%s_%s.csv",
+				this.basedir, terminal, TEST_CURRENCY.replaceAll("/", "-"), sdf.format(this.currentDate.getTime()));
 		// give the table a header
 		output.println("candle History for " + TEST_CURRENCY + ". interval ");
 		// get the keys for the historicalRates table into a sorted list
@@ -478,14 +481,19 @@ public class FXCMHisMarketDataMiner implements IGenericMessageListener,
 	}
 
 	public static void main(String[] args) throws Exception {
+        if(args.length == 0) {
+            System.out.println("Please specify folder to store history data");
+            System.exit(0);
+        }
+        String basedir = args[0];
 		Calendar startTime = Calendar.getInstance();
 		startTime.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		Calendar endTime = (Calendar)startTime.clone();
 
-		startTime.set(2013, 0, 1, 0, 0, 0);
-		endTime.set(2013, 2, 31, 0, 0, 0);
+		startTime.set(2014, 0, 1, 0, 0, 0);
+		endTime.set(2014, 3, 23, 0, 0, 0);
 
-		FXCMHisMarketDataMiner miner = new FXCMHisMarketDataMiner("rkichenama", "1311016", "Demo", startTime, endTime);
+		FXCMHisMarketDataMiner miner = new FXCMHisMarketDataMiner("rkichenama", "1311016", "Demo", basedir, startTime, endTime);
 		miner.login();
 		miner.retrieveAccounts();
 		miner.getMarketData();

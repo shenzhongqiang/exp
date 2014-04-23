@@ -7,6 +7,7 @@
     <property name="ivy.reports.dir" location="${build.dir}/ivy-reports" />
     <property name="test.reports.dir" location="${build.dir}/test-reports" />
     <property name="hibernate.dir" location="src/main/resources" />
+    <property name="history.dir" location="src/main/java/history/EURUSD5M" />
     <path id="compile.classpath">
         <fileset dir="lib">
             <include name="*.jar"/>
@@ -23,6 +24,7 @@
         <mkdir dir="${classes.dir}" />
         <mkdir dir="${test.classes.dir}" />
         <mkdir dir="${test.reports.dir}" />
+        <mkdir dir="${history.dir}" />
         <copy todir="lib">
             <fileset dir="locallib" includes="**/*" />
         </copy>
@@ -37,6 +39,8 @@
     </target>
 
     <target name="getdata" depends="compile">
-        <java classname="main.java.marketdataminer.FXCMHisMarketDataMiner" classpathref="run.classpath" />
+        <java classname="main.java.marketdataminer.FXCMHisMarketDataMiner" classpathref="run.classpath">
+            <arg path="${history.dir}" />
+        </java>
     </target>
 </project>
