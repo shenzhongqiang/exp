@@ -1,6 +1,7 @@
 package main.java.data;
 
 import java.io.*;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -172,7 +173,7 @@ public class MarketDataPusher {
 	}
 
 	private static TreeMap<Date, String> getDateFileMap() {
-		String path = "marketdata\\FX_FXCM_Demo_EUR-USD_2013_EST_5";
+		String path = "src/main/java/history/EURUSD5M";
 		File folder = new File(path);
 		File[] files = folder.listFiles();
 		String pattern = "(\\d{4}-\\d{2}-\\d{2})";

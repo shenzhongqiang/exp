@@ -34,11 +34,11 @@
         <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" debug="true" classpathref="compile.classpath" />
     </target>
 
-    <target name="execute" depends="compile">
+    <target name="backtest" depends="compile">
         <java classname="main.java.backtest.BackTesting" classpathref="run.classpath" />
     </target>
 
-    <target name="getdata" depends="compile">
+    <target name="downloaddata" depends="compile">
         <java classname="main.java.marketdataminer.FXCMHisMarketDataMiner" classpathref="run.classpath">
             <arg path="${history.dir}" />
         </java>
