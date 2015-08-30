@@ -43,4 +43,8 @@
             <arg path="${history.dir}" />
         </java>
     </target>
+
+    <target name="clean" description="clean up">
+        <delete dir="${build.dir}"/>
+    </target>
 </project>
