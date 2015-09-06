@@ -1,4 +1,4 @@
-<project xmlns:ivy="antlib:org.apache.ivy.ant" name="hello-ivy" default="run">
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="exp" default="run" basedir=".">
     <property name="src.dir" location="src/main/java" />
     <property name="test.src.dir" location="src/test/java" />
     <property name="build.dir" location="build" />
@@ -39,7 +39,22 @@
     </target>
 
     <target name="downloaddata" depends="compile">
-        <java classname="main.java.marketdataminer.FXCMHisMarketDataMiner" classpathref="run.classpath">
+        <java classname="main.java.marketdataminer.Main" fork="true">
+            <classpath>
+                <pathelement path="${classes.dir}" />
+                <pathelement path="lib/fxcore2.jar" />
+            </classpath>
+            <jvmarg value="-Djava.library.path=lib${path.separator}lib/fxcore2.jar" />
+            <arg line="--instrument EUR/USD" />
+            <arg line="--timeframe m5" />
+            <arg line="--datefrom {DATEFROM}" />
+            <arg line="--dateto {DATETO}" />
+            <arg line="--login D181913708001" />
+            <arg line="--password 7217" />
+            <arg line="--url http://www.fxcorporate.com/Hosts.jsp" />
+            <arg line="--connection Demo" />
+            <arg line="--sessionid {SESSIONID}" />
+            <arg line="--pin {PIN}" />
             <arg path="${history.dir}" />
         </java>
     </target>
