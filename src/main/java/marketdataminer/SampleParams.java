@@ -175,7 +175,7 @@ public class SampleParams {
         } catch (Exception ex) {
             mRateLimit = Double.NaN;
         }
-        DateFormat df = new SimpleDateFormat("MM.dd.yyyy HH:mm:ss");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         try {
             mDateFrom.setTime(df.parse(sDateFrom));
         } catch (Exception ex) {

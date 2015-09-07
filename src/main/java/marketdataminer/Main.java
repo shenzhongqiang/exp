@@ -1,15 +1,16 @@
 package main.java.marketdataminer;
 
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-
+import au.com.bytecode.opencsv.CSVWriter;
 import com.fxcore2.*;
 
 public class Main {
 
-    static SimpleDateFormat mDateFormat = new SimpleDateFormat("MM.dd.yyyy HH:mm:ss");
+    static SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     public static void main(String[] args) {
         O2GSession session = null;
@@ -91,7 +92,7 @@ public class Main {
                         break;
                     }
                 }
-                printPrices(session, response);
+                savePrices(session, response);
             } else {
                 break;
             }
@@ -99,13 +100,28 @@ public class Main {
     }
 
     // Print history data from response
-    public static void printPrices(O2GSession session, O2GResponse response) {
+    public static void savePrices(O2GSession session, O2GResponse response) throws IOException {
         System.out.println(String.format("Request with RequestID=%s is completed:", response.getRequestId()));
         O2GResponseReaderFactory factory = session.getResponseReaderFactory();
         if (factory != null) {
             O2GMarketDataSnapshotResponseReader reader = factory.createMarketDataSnapshotReader(response);
+            String historyFile = "src/main/java/history/EURUSD5M";
+            CSVWriter writer = new CSVWriter(new FileWriter(historyFile, true));
             for (int ii = reader.size() - 1; ii >= 0; ii--) {
                 if (reader.isBar()) {
+                    String[] entries = {
+                        mDateFormat.format(reader.getDate(ii).getTime()),
+                        Double.toString(reader.getBidOpen(ii)),
+                        Double.toString(reader.getBidClose(ii)),
+                        Double.toString(reader.getBidHigh(ii)),
+                        Double.toString(reader.getBidLow(ii)),
+                        Double.toString(reader.getAskOpen(ii)),
+                        Double.toString(reader.getAskClose(ii)),
+                        Double.toString(reader.getAskHigh(ii)),
+                        Double.toString(reader.getAskLow(ii)),
+                        Integer.toString(reader.getVolume(ii))
+                    };
+                    writer.writeNext(entries);
                     System.out.println(String.format("DateTime=%s, BidOpen=%s, BidHigh=%s, BidLow=%s, BidClose=%s, AskOpen=%s, AskHigh=%s, AskLow=%s, AskClose=%s, Volume=%s",
                             mDateFormat.format(reader.getDate(ii).getTime()), reader.getBidOpen(ii), reader.getBidHigh(ii), reader.getBidLow(ii), reader.getBidClose(ii),
                             reader.getAskOpen(ii), reader.getAskHigh(ii), reader.getAskLow(ii), reader.getAskClose(ii), reader.getVolume(ii)));
@@ -113,6 +129,7 @@ public class Main {
                     System.out.println(String.format("DateTime=%s, Bid=%s, Ask=%s", mDateFormat.format(reader.getDate(ii).getTime()), reader.getBidClose(ii), reader.getAskClose(ii)));
                 }
             }
+            writer.close();
         }
     }
 
