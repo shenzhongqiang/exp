@@ -32,7 +32,7 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		Strategy strategy = new EmaCrossStrategy(order);
 
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2014-01-01", "2014-02-28");
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-08-01", "2015-09-01");
 		int barNum = mdp.getBarNum();
 
 		// attach order as subscriber for market data

@@ -59,21 +59,18 @@ public class MarketDataPusher {
 			return;
 		}
 
-		TreeMap<Date, String> tm = getDateFileMap();
-		Set<Date> dates = tm.keySet();
 		this.askBuffer = new ArrayList<MarketData>();
 		this.bidBuffer = new ArrayList<MarketData>();
 		// store all market data ranging from start to end into bid and ask buffer
-		for(Date date: dates) {
-			String filePath = tm.get(date);
-
-			if(date.compareTo(this.start) >= 0 && date.compareTo(this.end) <= 0) {
-				HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, filePath);
-				this.askBuffer.addAll(hm.get("ask"));
-				this.bidBuffer.addAll(hm.get("bid"));
-			}
-
-		}
+        String filepath = "src/main/java/history/EURUSD5M";
+        HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, filepath);
+        for(int i=0; i < hm.get("ask").size(); i++) {
+            Date date = hm.get("ask").get(i).getStartDate();
+            if(date.compareTo(this.start) >= 0 && date.compareTo(this.end) < 0) {
+                this.askBuffer.add(hm.get("ask").get(i));
+                this.bidBuffer.add(hm.get("bid").get(i));
+            }
+        }
 
 		// initialize array list of subsribers
 		this.strategies = new ArrayList<Subscriber>();
@@ -134,22 +131,21 @@ public class MarketDataPusher {
 
 			while((parts = reader.readNext()) != null) {
 				String start = parts[0];
-				String end = parts[1];
 
-				double bidOpen = Double.parseDouble(parts[2]);
-				double bidClose = Double.parseDouble(parts[3]);
-				double bidHigh = Double.parseDouble(parts[4]);
-				double bidLow = Double.parseDouble(parts[5]);
+				double bidOpen = Double.parseDouble(parts[1]);
+				double bidClose = Double.parseDouble(parts[2]);
+				double bidHigh = Double.parseDouble(parts[3]);
+				double bidLow = Double.parseDouble(parts[4]);
 
-				double askOpen = Double.parseDouble(parts[6]);
-				double askClose = Double.parseDouble(parts[7]);
-				double askHigh = Double.parseDouble(parts[8]);
-				double askLow = Double.parseDouble(parts[9]);
+				double askOpen = Double.parseDouble(parts[5]);
+				double askClose = Double.parseDouble(parts[6]);
+				double askHigh = Double.parseDouble(parts[7]);
+				double askLow = Double.parseDouble(parts[8]);
 
-				int volume = Integer.parseInt(parts[10]);
-				MarketData bid = new MarketData(product, start, end,
+				int volume = Integer.parseInt(parts[9]);
+				MarketData bid = new MarketData(product, start,
 					bidOpen, bidClose, bidHigh, bidLow, volume);
-				MarketData ask = new MarketData(product, start, end,
+				MarketData ask = new MarketData(product, start, 
 						askOpen, askClose, askHigh, askLow, volume);
 
 				bids.add(bid);
@@ -167,6 +163,8 @@ public class MarketDataPusher {
 		}
 
 		HashMap<String, ArrayList<MarketData>> hm = new HashMap<String, ArrayList<MarketData>>();
+        Collections.reverse(asks);
+        Collections.reverse(bids);
 		hm.put("ask", asks);
 		hm.put("bid", bids);
 		return hm;

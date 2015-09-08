@@ -6,14 +6,13 @@ import java.text.*;
 public class MarketData {
 	private String product;
 	private Date start;
-	private Date end;
 	private double Open;
 	private double High;
 	private double Low;
 	private double Close;
 	private int volume;
 
-	public MarketData(String product, String start, String end,
+	public MarketData(String product, String start,
 			double Open, double Close, double High, double Low, int volume) {
 		this.product = product;
 		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -22,13 +21,6 @@ public class MarketData {
 		}
 		catch(ParseException e) {
 			System.out.println("Unable to parse start time using " + ft);
-		}
-
-		try {
-			this.end = ft.parse(end);
-		}
-		catch(ParseException e) {
-			System.out.println("Unable to parse end time using " + ft);
 		}
 
 		this.Open = Open;
@@ -48,10 +40,9 @@ public class MarketData {
 		return ft.format(this.start);
 	}
 
-	public String getEnd() {
-		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		return ft.format(this.end);
-	}
+    public Date getStartDate() {
+        return this.start;
+    }
 
 	public double getOpen() {
 		return this.Open;
@@ -73,4 +64,8 @@ public class MarketData {
 		return this.volume;
 	}
 
+    public String toString() {
+        return String.format("<MarketData [%s] Start=%s Open=%f Close=%f High=%f Low=%f Volume=%d>",
+            this.product, this.getStart(), this.Open, this.Close, this.High, this.Low, this.volume);
+    }
 }
