@@ -1,9 +1,9 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="exp" default="run" basedir=".">
     <property name="src.dir" location="src/main/java" />
-    <property name="test.src.dir" location="src/test/java" />
+    <property name="test.dir" location="test/main/java" />
     <property name="build.dir" location="build" />
+    <property name="build.test.dir" location="build/test" />
     <property name="classes.dir" location="${build.dir}/classes" />
-    <property name="test.classes.dir" location="${build.dir}/test-classes" />
     <property name="ivy.reports.dir" location="${build.dir}/ivy-reports" />
     <property name="test.reports.dir" location="${build.dir}/test-reports" />
     <property name="hibernate.dir" location="src/main/resources" />
@@ -12,6 +12,7 @@
         <fileset dir="lib">
             <include name="*.jar"/>
         </fileset>
+        <pathelement location="${classes.dir}" />
     </path>
     <path id="run.classpath">
         <path refid="compile.classpath" />
@@ -22,7 +23,7 @@
         <ivy:resolve />
         <ivy:retrieve sync="true" type="jar,bundle" />
         <mkdir dir="${classes.dir}" />
-        <mkdir dir="${test.classes.dir}" />
+        <mkdir dir="${build.test.dir}" />
         <mkdir dir="${test.reports.dir}" />
         <copy todir="lib">
             <fileset dir="locallib" includes="**/*" />
@@ -31,6 +32,7 @@
 
     <target name="compile" depends="init">
         <javac srcdir="${src.dir}" destdir="${classes.dir}" includeantruntime="false" debug="true" classpathref="compile.classpath" />
+        <javac srcdir="${test.dir}" destdir="${build.test.dir}" includeantruntime="false" debug="true" classpathref="compile.classpath" />
     </target>
 
     <target name="backtest" depends="compile">
@@ -60,7 +62,21 @@
         </java>
     </target>
 
+    <target name="test" description="unit test" depends="compile">
+        <junit fork="yes" haltonfailure="yes">
+            <test name="main.java.indicator.EmaTest" />
+            <formatter type="plain" usefile="false" />
+            <classpath>
+                <pathelement path="${build.test.dir}" />
+                <pathelement path="${classes.dir}" />
+                <pathelement path="lib/junit-4.11.jar" />
+                <pathelement path="lib/hamcrest-core-1.3.jar" />
+            </classpath>
+        </junit>
+    </target>
+
     <target name="clean" description="clean up">
         <delete dir="${build.dir}"/>
+        <delete dir="${build.test.dir}"/>
     </target>
 </project>
