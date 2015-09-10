@@ -1,6 +1,6 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="exp" default="run" basedir=".">
     <property name="src.dir" location="src/main/java" />
-    <property name="test.dir" location="test/main/java" />
+    <property name="test.dir" location="test" />
     <property name="build.dir" location="build" />
     <property name="build.test.dir" location="build/test" />
     <property name="classes.dir" location="${build.dir}/classes" />
@@ -64,14 +64,16 @@
 
     <target name="test" description="unit test" depends="compile">
         <junit fork="yes" haltonfailure="yes">
-            <test name="main.java.indicator.EmaTest" />
             <formatter type="plain" usefile="false" />
+            <classpath refid="run.classpath" />
             <classpath>
                 <pathelement path="${build.test.dir}" />
-                <pathelement path="${classes.dir}" />
-                <pathelement path="lib/junit-4.11.jar" />
-                <pathelement path="lib/hamcrest-core-1.3.jar" />
             </classpath>
+            <batchtest fork="yes" todir="${test.reports.dir}">
+                <fileset dir="${test.dir}">
+                    <include name="**/*Test*.java" />
+                </fileset>
+            </batchtest>
         </junit>
     </target>
 
