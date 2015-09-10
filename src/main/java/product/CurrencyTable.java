@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.HashMap;
 import java.util.Enumeration;
+import main.java.exceptions.InvalidCurrency;
 
 public class CurrencyTable {
     private static HashMap<String, CurrencyPair> currencyTable = getCurrencyTable();
@@ -46,14 +47,23 @@ public class CurrencyTable {
     }
 
     public static double getPoint(String pair) {
+        if(!currencyTable.containsKey(pair)) {
+            throw new InvalidCurrency(pair);
+        }
         return currencyTable.get(pair).getPoint();
     }
 
     public static double getMarginPerMiniLot(String pair) {
+        if(!currencyTable.containsKey(pair)) {
+            throw new InvalidCurrency(pair);
+        }
         return currencyTable.get(pair).getMarginPerMiniLot();
     }
 
     public static double getValuePerPoint(String pair) {
+        if(!currencyTable.containsKey(pair)) {
+            throw new InvalidCurrency(pair);
+        }
         return currencyTable.get(pair).getValuePerPoint();
     }
 }

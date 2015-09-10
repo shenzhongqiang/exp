@@ -3,3 +3,4 @@
 /build
 backtesting.db
 /src/main/java/history
+*.swp
