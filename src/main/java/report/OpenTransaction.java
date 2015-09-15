@@ -1,0 +1,51 @@
+package main.java.report;
+import java.util.Date;
+import main.java.model.TransactionHistory;
+import main.java.model.Account;
+import main.java.exceptions.*;
+
+public class OpenTransaction extends TransactionHistory {
+    private int openAmount;
+
+    public OpenTransaction() {
+        super();
+    }
+
+    public OpenTransaction(Account account, Date time, String product, double price, int amount, int positionId) {
+        super(account, time, product, price, amount, positionId);
+        this.openAmount = amount;
+    }
+
+    public OpenTransaction(TransactionHistory th) {
+        this(th.getAccount(), th.getTime(), th.getProduct(), th.getPrice(), th.getAmount(), th.getPositionId());
+    }
+
+    public int getOpenAmount() {
+        return this.openAmount;
+    }
+
+    public void setOpenAmount(int amount) {
+        this.openAmount = amount;
+    }
+
+    /**
+     * Close transaction - update amount that are still open
+     *
+     * @return {@link ClosedTransaction} for the closed transaction
+     */
+    public ClosedTransaction close(Date closeTime, double closePrice, int closeAmount) {
+        if(this.openAmount < closeAmount) {
+            throw new NotEnoughAmountToClose(closeAmount);
+        }
+
+        Date openTime = this.getTime();
+        if(openTime.compareTo(closeTime) > 0) {
+            throw new CloseEarlierThanOpen(openTime, closeTime);
+        }
+
+        this.openAmount -= closeAmount;
+
+        String type = this.openAmount > 0 ? "buy" : "sell";
+        return new ClosedTransaction(openTime, type, closeAmount, this.getProduct(), this.getPrice(), closeTime, closePrice);
+    }
+}

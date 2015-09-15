@@ -37,118 +37,53 @@ public class Report {
 	public double getProfitLoss() throws Exception {
 		// get all transaction histories from database
 		Transaction tx = session.beginTransaction();
-		Query q = session.createQuery("from TransactionHistory where account.id = :id and product = :product order by time asc");
-		q.setParameter("id",  1);
-		q.setParameter("product", "EURUSD");
+		Query q = session.createQuery("from TransactionHistory where account.id = :id order by time asc");
+		q.setParameter("id",  this.account.getId());
 		List<TransactionHistory> list = q.list();
 		tx.commit();
 
-		// initialize FIFO queue to empty queue. The queue will be used to store open transactions
-		ArrayList<TransactionHistory> open = new ArrayList<TransactionHistory>();
+        // initialize hash map to store all open transactions
+        HashMap<String, OpenTransactionList> openMap = new HashMap<String, OpenTransactionList>();
 		// array to store closed transactions
 		ArrayList<ClosedTransaction> closed = new ArrayList<ClosedTransaction>();
-		// initialize queue director to 0. 1 means long, -1 means short.
-		int queueDir = 0;
 
 		// calculate total profit loss
 		for(int k = 0; k < list.size(); k++) {
 			// get transaction item
 			TransactionHistory th = list.get(k);
 			Date time = th.getTime();
+            String product = th.getProduct();
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			String strTime =  ft.format(time);
 
-			if(open.size() == 0) {
-				// if queue is empty, push transaction item into the queue
-				open.add(th);
-				// set queue direction to the direction of the transaction item
-				queueDir = th.getAmount() > 0 ? 1 : -1;
-			}
-			else {
-				// if queue is not empty, push transaction item into the queue only when
-				// transaction item has the same direction of the queue,
-				// otherwise close transaction items in the queue.
-				int dir = th.getAmount() > 0 ? 1: -1;
-				if(dir == queueDir) {
-					// if same direction, push into queue
-					open.add(th);
-				}
-				else {
-					// if opposite direction, close transactions in the queue and calculate P/L
-					if(queueDir == 1) {
-						// if queue direction is long, which means transaction item's direction is short
-						// use the short transaction to close long transactions in the queue
-						int remainAmount = th.getAmount();
-						Iterator<TransactionHistory> j = open.iterator();
-						while(j.hasNext() && remainAmount < 0) {
-							TransactionHistory item = j.next();
-							if(remainAmount + item.getAmount() <= 0) {
-								// if there is still remaining amount in the short transaction
-								double pl = item.getAmount() * 1000 * (th.getPrice() - item.getPrice());
-								remainAmount += item.getAmount();
-								j.remove();
-								ClosedTransaction ct = new ClosedTransaction(item.getTime(),"buy", item.getAmount(), item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
-								closed.add(ct);
-								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
-							}
-							else {
-								// if there is no remaining amount in the short transaction
-								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
-								item.setAmount(remainAmount + item.getAmount());
-								ClosedTransaction ct = new ClosedTransaction(item.getTime(), "buy", remainAmount, item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
-								closed.add(ct);
-								remainAmount = 0;
-
-								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
-							}
-						}
-
-						// if after closing all long transactions in the queue,
-						// there is still remaining amount in the short transaction,
-						// push that short transaction with remaining amount to the queue
-						if(remainAmount < 0) {
-							th.setAmount(remainAmount);
-							open.add(th);
-						}
-					}
-					else {
-						// if queue direction is short, which means transaction item's direction is long
-						// use the long transaction to close short transactions in the queue
-						int remainAmount = th.getAmount();
-						Iterator<TransactionHistory> j = open.iterator();
-						while(j.hasNext() && remainAmount > 0) {
-							TransactionHistory item = j.next();
-							if(remainAmount + item.getAmount() >= 0) {
-								// if there is still remaining amount in the long transaction
-								double pl = item.getAmount() * 1000 * (th.getPrice() - item.getPrice());
-								remainAmount += item.getAmount();
-								j.remove();
-								ClosedTransaction ct = new ClosedTransaction(item.getTime(), "sell", item.getAmount(), item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
-								closed.add(ct);
-								//System.out.println(String.format("%s - close %d, profit %f", strTime, item.getAmount(), pl));
-							}
-							else {
-								// if there is no remaining amount in the long transaction
-								double pl = remainAmount * -1 * 1000 * (th.getPrice() - item.getPrice());
-								item.setAmount(remainAmount + item.getAmount());
-								ClosedTransaction ct = new ClosedTransaction(item.getTime(), "sell", remainAmount, item.getProduct(), item.getPrice(), th.getTime(), th.getPrice(), pl);
-								closed.add(ct);
-								remainAmount = 0;
-
-								//System.out.println(String.format("%s - close %d, profit %f", strTime, remainAmount, pl));
-							}
-						}
-
-						// if after closing all short transactions in the queue,
-						// there is still remaining amount in the long transaction,
-						// push that long transaction with remaining amount to the queue
-						if(remainAmount > 0) {
-							th.setAmount(remainAmount);
-							open.add(th);
-						}
-					}
-				}
-			}
+            if(!openMap.containsKey(product)) {
+                // if queue is empty for the product, create a new open transaction list
+                OpenTransactionList otl = new OpenTransactionList();
+                otl.open(th);
+                openMap.put(product, otl);
+            }
+            else {
+                // if queue is not empty for the product, retrieve the open transaction list
+                OpenTransactionList otl = openMap.get(product);
+                if(otl.getOpenAmount() > 0 && th.getAmount() > 0) {
+                    // if open transaction list is long and new transaction item is long, append the item to the list
+                    otl.open(th);
+                }
+                else if(otl.getOpenAmount() > 0 && th.getAmount() < 0) {
+                    // if open transaction list is long and new transaction item is short, close transactions in the list
+                    ArrayList<ClosedTransaction> tranx_list = otl.close(th);
+                    closed.addAll(tranx_list);
+                }
+                else if(otl.getOpenAmount() < 0 && th.getAmount() < 0) {
+                    // if open transaction list is short and new transaction item is short, append the item to the list
+                    otl.open(th);
+                }
+                else {
+                    // if open transaction list is short and new transaction item is long, close transactions in the list
+                    ArrayList<ClosedTransaction> tranx_list = otl.close(th);
+                    closed.addAll(tranx_list);
+                }
+            }
 		}
 
 		double totalPl = writeReportToExcel(closed);

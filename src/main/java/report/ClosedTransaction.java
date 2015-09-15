@@ -2,18 +2,19 @@ package main.java.report;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import main.java.product.*;
+
 public class ClosedTransaction {
 	private Date openTime;
 	private String type;
-	private int size;
+	private int size; // size is in mini lot (i.e. 1K)
 	private String product;
 	private double openPrice;
 	private Date closeTime;
 	private double closePrice;
-	private double pl;
-	private static double totalPl = 0;
+    private double pl;
 
-	public ClosedTransaction(Date openTime, String type, int size, String product, double openPrice, Date closeTime, double closePrice, double pl) {
+	public ClosedTransaction(Date openTime, String type, int size, String product, double openPrice, Date closeTime, double closePrice) {
 		this.openTime = openTime;
 		this.type = type;
 		this.size = size;
@@ -21,8 +22,10 @@ public class ClosedTransaction {
 		this.openPrice = openPrice;
 		this.closeTime = closeTime;
 		this.closePrice = closePrice;
-		this.pl = pl;
-		totalPl += pl;
+
+        double point = CurrencyTable.getPoint(product);
+        double valuePerPoint = CurrencyTable.getValuePerPoint(product);
+        this.pl = (closePrice - openPrice) * size * valuePerPoint / point;
 	}
 
 	public Date getOpenTime() {
@@ -53,11 +56,7 @@ public class ClosedTransaction {
 		return this.closePrice;
 	}
 
-	public double getPl() {
-		return this.pl;
-	}
-
-	public double getTotalPl() {
-		return totalPl;
-	}
+    public double getPl() {
+        return this.pl;
+    }
 }

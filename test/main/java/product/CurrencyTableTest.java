@@ -22,7 +22,9 @@ public class CurrencyTableTest {
         double point = CurrencyTable.getPoint("EURUSD");
         double valuePerPoint = CurrencyTable.getValuePerPoint("EURUSD");
         double marginPerMiniLot = CurrencyTable.getMarginPerMiniLot("EURUSD");
-        System.out.format("%f %f %f\n", point, valuePerPoint, marginPerMiniLot);
+        assertEquals(point, 0.0001, 0.00001);
+        assertEquals(valuePerPoint, 0.1, 0.00001);
+        assertEquals(marginPerMiniLot, 3.25, 0.00001);
     }
 
     @Test(expected=InvalidCurrency.class)
