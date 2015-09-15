@@ -45,7 +45,7 @@ public class OpenTransaction extends TransactionHistory {
 
         this.openAmount -= closeAmount;
 
-        String type = this.openAmount > 0 ? "buy" : "sell";
+        String type = this.getAmount() > 0 ? "buy" : "sell";
         return new ClosedTransaction(openTime, type, closeAmount, this.getProduct(), this.getPrice(), closeTime, closePrice);
     }
 }
