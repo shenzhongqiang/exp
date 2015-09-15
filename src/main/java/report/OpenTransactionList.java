@@ -50,6 +50,10 @@ public class OpenTransactionList {
      * @return ArrayList<{@link CloseTransaction}>
      */
     public ArrayList<ClosedTransaction> close(TransactionHistory th) {
+        if(this.openAmount == 0) {
+            throw new NothingToClose();
+        }
+
         if(this.openAmount > 0) {
             return this.closeLong(th);
         }
@@ -69,6 +73,7 @@ public class OpenTransactionList {
         if(closeAmount > this.openAmount) {
             throw new NotEnoughAmountToClose(closeAmount);
         }
+        this.openAmount -= closeAmount;
 
         ArrayList<ClosedTransaction> closed = new ArrayList<ClosedTransaction>();
         int remainToClose = closeAmount;
@@ -101,6 +106,7 @@ public class OpenTransactionList {
         if(closeAmount < this.openAmount) {
             throw new NotEnoughAmountToClose(closeAmount);
         }
+        this.openAmount -= closeAmount;
 
         ArrayList<ClosedTransaction> closed = new ArrayList<ClosedTransaction>();
         int remainToClose = closeAmount;

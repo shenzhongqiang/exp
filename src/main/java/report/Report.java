@@ -57,31 +57,41 @@ public class Report {
 			String strTime =  ft.format(time);
 
             if(!openMap.containsKey(product)) {
-                // if queue is empty for the product, create a new open transaction list
+                // if map is empty for the product, create a new open transaction list
                 OpenTransactionList otl = new OpenTransactionList();
                 otl.open(th);
                 openMap.put(product, otl);
             }
             else {
-                // if queue is not empty for the product, retrieve the open transaction list
+                // if map is not empty for the product, retrieve the open transaction list
                 OpenTransactionList otl = openMap.get(product);
+                if(otl.getOpenAmount() == 0) {
+                    // if open transaction list is empty, add the item to the list
+                    otl.open(th);
+                    continue;
+                }
+
                 if(otl.getOpenAmount() > 0 && th.getAmount() > 0) {
                     // if open transaction list is long and new transaction item is long, append the item to the list
                     otl.open(th);
+                    continue;
                 }
-                else if(otl.getOpenAmount() > 0 && th.getAmount() < 0) {
+                if(otl.getOpenAmount() > 0 && th.getAmount() < 0) {
                     // if open transaction list is long and new transaction item is short, close transactions in the list
                     ArrayList<ClosedTransaction> tranx_list = otl.close(th);
                     closed.addAll(tranx_list);
+                    continue;
                 }
-                else if(otl.getOpenAmount() < 0 && th.getAmount() < 0) {
+                if(otl.getOpenAmount() < 0 && th.getAmount() < 0) {
                     // if open transaction list is short and new transaction item is short, append the item to the list
                     otl.open(th);
+                    continue;
                 }
-                else {
+                if(otl.getOpenAmount() < 0 && th.getAmount() > 0) {
                     // if open transaction list is short and new transaction item is long, close transactions in the list
                     ArrayList<ClosedTransaction> tranx_list = otl.close(th);
                     closed.addAll(tranx_list);
+                    continue;
                 }
             }
 		}

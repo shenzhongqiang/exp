@@ -149,9 +149,31 @@ public class ReportTest {
         order.MarketSell("GBPUSD", "2015-09-10 00:00:00", 4.00, 2);
         Report report = new Report(this.session, this.account);
         double totalPl = report.getProfitLoss();
-        System.out.println(totalPl);
         assertEquals(totalPl, 5000.0, 0.01);
-        System.exit(1);
+    }
+
+    @Test
+    public void test11() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        order.MarketSell("GBPUSD", "2015-09-09 00:00:00", 3.00, 1);
+        order.MarketBuy("GBPUSD", "2015-09-10 00:00:00", 4.00, 1);
+        order.MarketSell("GBPUSD", "2015-09-11 00:00:00", 4.00, 1);
+        order.MarketBuy("GBPUSD", "2015-09-12 00:00:00", 5.00, 1);
+        Report report = new Report(this.session, this.account);
+        double totalPl = report.getProfitLoss();
+        assertEquals(totalPl, -2000.0, 0.01);
+    }
+
+    @Test
+    public void test12() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        order.MarketBuy("GBPUSD", "2015-09-09 00:00:00", 4.00, 1);
+        order.MarketSell("GBPUSD", "2015-09-10 00:00:00", 3.00, 1);
+        order.MarketSell("GBPUSD", "2015-09-11 00:00:00", 4.00, 1);
+        order.MarketBuy("GBPUSD", "2015-09-12 00:00:00", 5.00, 1);
+        Report report = new Report(this.session, this.account);
+        double totalPl = report.getProfitLoss();
+        assertEquals(totalPl, -2000.0, 0.01);
     }
 }
 
