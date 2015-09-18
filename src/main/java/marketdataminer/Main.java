@@ -62,6 +62,11 @@ public class Main {
         O2GRequest request = factory.createMarketDataSnapshotRequestInstrument(sInstrument, timeframe, 300);
         Calendar dtFirst = dtTo;
         Calendar dtEarliest;
+        File file = getHistoryFile(sInstrument, sTimeframe);
+        if(file.exists()) {
+            file.delete();
+        }
+        file.createNewFile();
         if (dtFrom == null) {
             dtEarliest = Calendar.getInstance();
             dtEarliest.setTime(new Date(Long.MIN_VALUE));
@@ -92,20 +97,28 @@ public class Main {
                         break;
                     }
                 }
-                savePrices(session, response);
+                savePrices(session, response, file);
             } else {
                 break;
             }
         } while (dtFirst.after(dtEarliest));
     }
 
+    // Generate file path and file name based on instrument and timeframe
+    public static File getHistoryFile(String sInstrument, String sTimeframe) {
+        File baseDir = new File("src/main/java/history");
+        String instrument = sInstrument.replace("/", "");
+        String filename = instrument + sTimeframe;
+        File file = new File(baseDir, filename);
+        return file;
+    }
+
     // Print history data from response
-    public static void savePrices(O2GSession session, O2GResponse response) throws IOException {
+    public static void savePrices(O2GSession session, O2GResponse response, File historyFile) throws IOException {
         System.out.println(String.format("Request with RequestID=%s is completed:", response.getRequestId()));
         O2GResponseReaderFactory factory = session.getResponseReaderFactory();
         if (factory != null) {
             O2GMarketDataSnapshotResponseReader reader = factory.createMarketDataSnapshotReader(response);
-            String historyFile = "src/main/java/history/EURUSD5M";
             CSVWriter writer = new CSVWriter(new FileWriter(historyFile, true));
             for (int ii = reader.size() - 1; ii >= 0; ii--) {
                 if (reader.isBar()) {

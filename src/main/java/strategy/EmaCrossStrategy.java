@@ -177,6 +177,4 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 			System.out.println(ex.getCause());
 		}
 	}
-
-
 }

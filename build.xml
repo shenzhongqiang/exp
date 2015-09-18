@@ -7,7 +7,6 @@
     <property name="ivy.reports.dir" location="${build.dir}/ivy-reports" />
     <property name="test.reports.dir" location="${build.dir}/test-reports" />
     <property name="hibernate.dir" location="src/main/resources" />
-    <property name="history" location="src/main/java/history/EURUSD5M" />
     <path id="compile.classpath">
         <fileset dir="lib">
             <include name="*.jar"/>
@@ -40,8 +39,6 @@
     </target>
 
     <target name="downloaddata" depends="compile">
-        <delete file="${history}" />
-        <touch file="${history}" />
         <java classname="main.java.marketdataminer.Main" fork="true">
             <classpath>
                 <pathelement path="${classes.dir}" />
@@ -51,7 +48,7 @@
             <jvmarg value="-Djava.library.path=lib${path.separator}lib/fxcore2.jar" />
             <arg line="--instrument EUR/USD" />
             <arg line="--timeframe m5" />
-            <arg line="--datefrom 2015-01-01" />
+            <arg line="--datefrom 2014-07-01" />
             <arg line="--dateto {DATETO}" />
             <arg line="--login D181913708001" />
             <arg line="--password 7217" />
