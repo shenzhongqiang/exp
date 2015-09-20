@@ -62,8 +62,10 @@ public class MarketDataPusher {
 		this.askBuffer = new ArrayList<MarketData>();
 		this.bidBuffer = new ArrayList<MarketData>();
 		// store all market data ranging from start to end into bid and ask buffer
-        String filepath = "src/main/java/history/EURUSD5M";
-        HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, filepath);
+        String sTimeframe = String.format("m%d", timeframe);
+        File historyFile = main.java.marketdataminer.Main.getHistoryFile(
+            this.product, sTimeframe);
+        HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, historyFile);
         for(int i=0; i < hm.get("ask").size(); i++) {
             Date date = hm.get("ask").get(i).getStartDate();
             if(date.compareTo(this.start) >= 0 && date.compareTo(this.end) < 0) {
@@ -121,12 +123,12 @@ public class MarketDataPusher {
 		this.orders.remove(o);
 	}
 
-	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, String filePath) {
+	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, File file) {
 
 		ArrayList<MarketData> bids = new ArrayList<MarketData>();
 		ArrayList<MarketData> asks = new ArrayList<MarketData>();
 		try {
-			CSVReader reader = new CSVReader(new FileReader(filePath));
+			CSVReader reader = new CSVReader(new FileReader(file));
 			String[] parts;
 
 			while((parts = reader.readNext()) != null) {
@@ -156,10 +158,10 @@ public class MarketDataPusher {
 
 		}
 		catch(FileNotFoundException ex) {
-			System.out.println("Unable to open file " + filePath);
+			System.out.println("Unable to open file " + file.getPath());
 		}
 		catch(IOException ex) {
-			System.out.println("Error reading file " + filePath);
+			System.out.println("Error reading file " + file.getPath());
 		}
 
 		HashMap<String, ArrayList<MarketData>> hm = new HashMap<String, ArrayList<MarketData>>();

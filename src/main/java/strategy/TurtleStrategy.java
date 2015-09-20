@@ -1,12 +1,12 @@
 package main.java.strategy;
 
 import java.util.*;
-
 import main.java.data.MarketData;
 import main.java.indicator.*;
 import main.java.model.*;
 import main.java.subscriber.*;
 import main.java.order.Order;
+import main.java.product.*;
 
 /**
  * Turtle Strategy
@@ -86,8 +86,6 @@ public class TurtleStrategy extends Strategy {
 			return;
 		}
 
-
-
 		try {
 			//check if has position
 			if(! order.HasPosition(product)) {
@@ -103,9 +101,9 @@ public class TurtleStrategy extends Strategy {
 				order.MarketSell(product, bidTs.get(i).getStart(), low, p.getAmount());
 
 				// cancel all pending orders
-				//order.CancelAllPendingOrders(product);
+				order.CancelAllPendingOrders(p.getId());
 				state = 0;
-				//System.out.println(String.format("breakout 10 day low. market sell %d at %f. cancel all pending.", p.getAmount(), low));
+				System.out.println(String.format("breakout 10 day low. market sell %d at %f. cancel all pending.", p.getAmount(), low));
 			}
 
 
@@ -113,38 +111,45 @@ public class TurtleStrategy extends Strategy {
 			double rangeHigh = high20.getRangeHigh(i - 1);
 			double high = bidTs.get(i).getHigh();
 
-			if(state == 0 && high > rangeHigh) {
-				// buy one unit
-				n = this.atr.getAtr(i - 1);
-				double dollarVol = n * 10000 * order.getAccount().getDollarPerPoint();
-				unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
-				String entryTime = askTs.get(i).getStart();
-				entryPrice = askTs.get(i).getHigh();
-				double stopPrice = entryPrice - 2 * n;
+			if(state == 0) {
+                if(high > rangeHigh) {
+                    // buy one unit
+                    n = this.atr.getAtr(i - 1);
+                    double point = CurrencyTable.getPoint(product);
+                    double valuePerPoint = CurrencyTable.getValuePerPoint(product);
+                    double dollarVol = n * valuePerPoint / point;
+                    this.unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
+                    String entryTime = askTs.get(i).getStart();
+                    this.entryPrice = askTs.get(i).getClose();
+                    double stopPrice = this.entryPrice - 2 * n;
 
-				int pid = order.MarketBuy(product, entryTime, entryPrice, unit);
-				order.StopSell(product, entryTime, stopPrice, unit, pid);
-				state = 1;
+                    int pid = order.MarketBuy(product, entryTime, this.entryPrice, this.unit);
+                    order.StopSell(product, entryTime, stopPrice, this.unit, pid);
+                    state = 1;
 
-				//System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
+                    System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
+                }
 			}
-			else if(state < 4 && high > entryPrice + n /2) {
-				//add one unit until 4 units
-				String entryTime = askTs.get(i).getStart();
-				entryPrice = askTs.get(i).getHigh();
-				order.MarketBuy(product, entryTime, entryPrice, unit);
+			else if(state < 4) {
+                if(high > this.entryPrice + n /2) {
+                    //add one unit until 4 units
+                    String entryTime = askTs.get(i).getStart();
+                    this.entryPrice = askTs.get(i).getClose();
+                    order.MarketBuy(product, entryTime, this.entryPrice, this.unit);
 
-				//raise stops for earlier units
-				/*List<PendingOrder> list = order.getStopSellOrders(product);
-				for(int k=0; k < list.size(); k++) {
-					PendingOrder po = list.get(k);
-					double stopPrice = po.getPrice() + n/2;
-					order.UpdatePendingOrder(po, po.getAmount(), stopPrice);
-					//System.out.println(String.format("adjust stop price to %f", stopPrice));
-				}*/
+                    //raise stops for earlier units
+                    Position p = order.getPosition(product);
+                    List<PendingOrder> list = order.getStopSellOrders(p.getId());
+                    for(int k=0; k < list.size(); k++) {
+                        PendingOrder po = list.get(k);
+                        double stopPrice = po.getPrice() + n/2;
+                        order.UpdatePendingOrder(po, po.getAmount(), stopPrice);
+                        System.out.println(String.format("adjust stop price to %f", stopPrice));
+                    }
 
-				state++;
-				//System.out.println(String.format("adding unit. market buy %d at %f", unit, entryPrice));
+                    state++;
+                    System.out.println(String.format("adding unit. market buy %d at %f", unit, entryPrice));
+                }
 			}
 		}
 		catch(Exception ex) {
