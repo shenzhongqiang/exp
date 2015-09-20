@@ -7,19 +7,14 @@ public class Position {
 	private String product;
 	private int amount;
 	private String type;
-	private Date time;
-	private double price;
-	private Set<PendingOrder> pendingOrders = new HashSet<PendingOrder>(0);
 
 	public Position() {
 
 	}
 
-	public Position(Account account, Date time,  String product, double price, int amount) {
+	public Position(Account account, String product, int amount) {
 		this.account = account;
-		this.time = time;
 		this.product = product;
-		this.price = price;
 		this.amount = amount;
 		this.type = "";
 	}
@@ -40,28 +35,12 @@ public class Position {
 		this.account = account;
 	}
 
-	public Date getTime() {
-		return this.time;
-	}
-
-	public void setTime(Date time) {
-		this.time = time;
-	}
-
 	public String getProduct() {
 		return this.product;
 	}
 
 	public void setProduct(String product) {
 		this.product = product;
-	}
-
-	public double getPrice() {
-		return this.price;
-	}
-
-	public void setPrice(double price) {
-		this.price = price;
 	}
 
 	public int getAmount() {
@@ -80,11 +59,8 @@ public class Position {
 		this.type = type;
 	}
 
-	public Set<PendingOrder> getPendingOrders() {
-		return this.pendingOrders;
-	}
-
-	public void setPendingOrders(Set pendingOrders) {
-		this.pendingOrders = pendingOrders;
-	}
+    public String toString() {
+        return String.format("<Position PositionID=[%d] AccountID=[%d] Product=[%s] Amount=[%d] Type=[%s]>",
+            this.id, this.account.getId(), this.product, this.amount, this.type);
+    }
 }

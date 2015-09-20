@@ -124,7 +124,7 @@ public class IdealTurtleStrategy extends Strategy {
 				double stopPrice = entryPrice - 2 * n;
 
 				int pid = order.MarketBuy(product, entryTime, entryPrice, unit);
-				order.StopSell(product, entryTime, stopPrice, unit, pid);
+				order.StopSell(product, entryTime, stopPrice, unit);
 				state = 1;
 
 				//System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));

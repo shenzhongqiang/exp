@@ -14,14 +14,6 @@
         <property name="product" column="product" type="string"/>
 		<property name="amount" column="amount" type="integer"/>
 		<property name="type" column="type" type="string"/>
-		<property name="time" column="time" type="date"/>
-		<property name="price" column="price" type="double"/>
-		<set name="pendingOrders" table="PendingOrder" inverse="true" >
-			<key>
-				<column name="position_id" not-null="false" />
-			</key>
-			<one-to-many class="main.java.model.PendingOrder" />
-		</set>
     </class>
 
 </hibernate-mapping>

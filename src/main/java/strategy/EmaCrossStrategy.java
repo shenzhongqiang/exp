@@ -138,7 +138,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
                 String entryTime = askTs.get(i).getStart();
                 unit = 2;
                 this.positionId = order.MarketBuy(product, entryTime, ask, unit);
-                order.StopSell(product, entryTime, stopPrice, unit, this.positionId);
+                order.StopSell(product, entryTime, stopPrice, unit);
                 state = 1;
                 System.out.println(String.format("r:%f, rangeLow:%f, market buy %d at %f. SL at %f.", r, rangeLow, unit, ask, stopPrice));
 			}
@@ -150,8 +150,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				if(high >= this.stopPrice + 2 * r) {
                     this.stopPrice = this.stopPrice + r;
                     String entryTime = askTs.get(i).getStart();
-					order.CancelAllPendingOrders(this.positionId);
-                    order.StopSell(product, entryTime, this.stopPrice, 2, this.positionId);
+					order.CancelAllPendingOrders(product);
+                    order.StopSell(product, entryTime, this.stopPrice, 2);
 				}
 				/*else if(crossedDown) {
 					order.MarketSell(product, exitTime, bid, this.unit, this.positionId);

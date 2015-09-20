@@ -11,13 +11,13 @@ public class OpenTransaction extends TransactionHistory {
         super();
     }
 
-    public OpenTransaction(Account account, Date time, String product, double price, int amount, int positionId) {
-        super(account, time, product, price, amount, positionId);
+    public OpenTransaction(Account account, Date time, String product, double price, int amount) {
+        super(account, time, product, price, amount);
         this.openAmount = amount;
     }
 
     public OpenTransaction(TransactionHistory th) {
-        this(th.getAccount(), th.getTime(), th.getProduct(), th.getPrice(), th.getAmount(), th.getPositionId());
+        this(th.getAccount(), th.getTime(), th.getProduct(), th.getPrice(), th.getAmount());
     }
 
     public int getOpenAmount() {

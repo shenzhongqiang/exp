@@ -2,6 +2,7 @@ package main.java.data;
 
 import java.util.*;
 import java.text.*;
+import main.java.exceptions.*;
 
 public class MarketData {
 	private String product;
@@ -14,6 +15,13 @@ public class MarketData {
 
 	public MarketData(String product, String start,
 			double Open, double Close, double High, double Low, int volume) {
+        if(High < Close || High < Open) {
+            throw new IllegalMarketData();
+        }
+        if(Low > Close || Low > Open) {
+            throw new IllegalMarketData();
+        }
+
 		this.product = product;
 		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try {

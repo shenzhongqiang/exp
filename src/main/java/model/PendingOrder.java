@@ -10,7 +10,6 @@ public class PendingOrder {
 	private double price;
 	private String type;
 	private Date time;
-	private Position position;
 
 	public PendingOrder() {
 
@@ -23,11 +22,6 @@ public class PendingOrder {
 		this.price = price;
 		this.amount = amount;
 		this.type = type;
-	}
-
-	public PendingOrder(Account account, Date time, String product, double price, int amount, String type, Position position) {
-		this(account, time, product, price, amount, type);
-		this.position = position;
 	}
 
 	public int getId() {
@@ -84,13 +78,5 @@ public class PendingOrder {
 
 	public void setTime(Date time) {
 		this.time = time;
-	}
-
-	public Position getPosition() {
-		return this.position;
-	}
-
-	public void setPosition(Position position) {
-		this.position = position;
 	}
 }

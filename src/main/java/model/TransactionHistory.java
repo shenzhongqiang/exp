@@ -1,6 +1,7 @@
 package main.java.model;
 
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class TransactionHistory {
 	private int id;
@@ -10,26 +11,18 @@ public class TransactionHistory {
 	private double price;
 	private int amount;
 	private Date time;
-	private int positionId;
-	private double pl;
 
 	public TransactionHistory() {
 
 	}
 
-	public TransactionHistory(Account account, Date time, String product, double price, int amount, int positionId) {
+	public TransactionHistory(Account account, Date time, String product, double price, int amount) {
 		this.account = account;
 		this.product = product;
 		this.price = price;
 		this.amount = amount;
 		this.time = time;
 		this.type = "";
-		this.positionId = positionId;
-	}
-
-	public TransactionHistory(Account account, Date time, String product, double price, int amount, int positionId, double pl) {
-		this(account, time, product, price, amount, positionId);
-		this.pl = pl;
 	}
 
 	public int getId() {
@@ -88,19 +81,11 @@ public class TransactionHistory {
 		this.price = price;
 	}
 
-	public int getPositionId() {
-		return this.positionId;
-	}
-
-	public void setPositionId(int positionId) {
-		this.positionId = positionId;
-	}
-
-	public double getPl() {
-		return this.pl;
-	}
-
-	public void setPl(double pl) {
-		this.pl = pl;
-	}
+    public String toString() {
+        SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String strTime = ft.format(this.time);
+        return String.format("<TransactionHistory ID=[%d] AccountID=[%d] Product=[%s]  Type=[%s] Price=[%f] Amount=[%d] Time=[%s]>",
+        this.id, this.account.getId(), this.product, this.type,
+        this.price, this.amount, strTime);
+    }
 }
