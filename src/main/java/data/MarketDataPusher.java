@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import au.com.bytecode.opencsv.CSVReader;
 import main.java.strategy.Strategy;
 import main.java.subscriber.*;
+import main.java.exceptions.*;
 
 /**
  * Push market data to upper layer like strategy or order
@@ -145,6 +146,11 @@ public class MarketDataPusher {
 				double askLow = Double.parseDouble(parts[8]);
 
 				int volume = Integer.parseInt(parts[9]);
+
+                if(bidOpen > askOpen || bidClose > askClose ||
+                    bidHigh > askHigh || bidLow > askLow) {
+                    throw new IllegalBidAsk();
+                }
 				MarketData bid = new MarketData(product, start,
 					bidOpen, bidClose, bidHigh, bidLow, volume);
 				MarketData ask = new MarketData(product, start, 

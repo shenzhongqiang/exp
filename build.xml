@@ -46,7 +46,7 @@
                 <pathelement path="lib/opencsv-2.3.jar" />
             </classpath>
             <jvmarg value="-Djava.library.path=lib${path.separator}lib/fxcore2.jar" />
-            <arg line="--instrument EUR/USD" />
+            <arg line="--instrument GBP/USD" />
             <arg line="--timeframe m5" />
             <arg line="--datefrom 2014-07-01" />
             <arg line="--dateto {DATETO}" />
