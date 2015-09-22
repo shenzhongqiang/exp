@@ -49,7 +49,7 @@
             <arg line="--instrument GBP/USD" />
             <arg line="--timeframe m5" />
             <arg line="--datefrom 2014-07-01" />
-            <arg line="--dateto {DATETO}" />
+            <arg line="--dateto 2015-09-20" />
             <arg line="--login D181913708001" />
             <arg line="--password 7217" />
             <arg line="--url http://www.fxcorporate.com/Hosts.jsp" />

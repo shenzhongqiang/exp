@@ -147,14 +147,18 @@ public class MarketDataPusher {
 
 				int volume = Integer.parseInt(parts[9]);
 
-                if(bidOpen > askOpen || bidClose > askClose ||
-                    bidHigh > askHigh || bidLow > askLow) {
-                    throw new IllegalBidAsk();
-                }
 				MarketData bid = new MarketData(product, start,
 					bidOpen, bidClose, bidHigh, bidLow, volume);
-				MarketData ask = new MarketData(product, start, 
+				MarketData ask = new MarketData(product, start,
 						askOpen, askClose, askHigh, askLow, volume);
+                /* comment out bid ask price validation, because sometimes bid > ask
+                if(bidOpen > askOpen || bidClose > askClose ||
+                    bidHigh > askHigh || bidLow > askLow) {
+                    System.out.println(bid);
+                    System.out.println(ask);
+                    throw new IllegalBidAsk();
+                }
+                */
 
 				bids.add(bid);
 				asks.add(ask);
