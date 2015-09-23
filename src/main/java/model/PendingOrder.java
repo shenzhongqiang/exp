@@ -1,6 +1,7 @@
 package main.java.model;
 
 import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class PendingOrder {
 	private int id;
@@ -79,4 +80,10 @@ public class PendingOrder {
 	public void setTime(Date time) {
 		this.time = time;
 	}
+
+    public String toString() {
+        SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return String.format("<PendingOrder ID=%d AccountID=%d Product=%s Amount=%d Price=%f Type=%s Time=%s>",
+            this.id, this.account.getId(), this.product, this.amount, this.price, this.type, ft.format(this.time));
+    }
 }

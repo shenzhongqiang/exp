@@ -22,6 +22,7 @@ public class TurtleStrategy extends Strategy {
 	// 4 - four units
 	private int state = 0;
 	private double entryPrice = 0;
+	private double stopPrice = 0;
 	// N = value of ATR
 	private double n = 0;
 	// indicator - ATR
@@ -59,7 +60,7 @@ public class TurtleStrategy extends Strategy {
 		bidTs.add(bid);
 		askTs.add(ask);
 		atr.Update(bid);
-		high20.Update(bid);
+		high20.Update(ask);
 		low10.Update(bid);
 		Run(product);
 	}
@@ -91,6 +92,9 @@ public class TurtleStrategy extends Strategy {
 			if(! order.HasPosition(product)) {
 				state = 0;
 			}
+            else {
+                order.getPosition(product);
+            }
 
 			//close positions if breakout 10 day low
 			double rangeLow = low10.getRangeLow(i - 1);
@@ -98,12 +102,12 @@ public class TurtleStrategy extends Strategy {
 			if(state > 0 && low < rangeLow) {
 				// close position
 				Position p = order.getPosition(product);
-				order.MarketSell(product, bidTs.get(i).getStart(), low, p.getAmount());
+				order.MarketSell(product, bidTs.get(i).getStart(), rangeLow, p.getAmount());
 
 				// cancel all pending orders
 				order.CancelAllPendingOrders(product);
 				state = 0;
-				System.out.println(String.format("breakout 10 day low. market sell %d at %f. cancel all pending.", p.getAmount(), low));
+				System.out.println(String.format("breakout 10 day low. market sell %d at %f. cancel all pending.", p.getAmount(), rangeLow));
 			}
 
 
@@ -120,35 +124,37 @@ public class TurtleStrategy extends Strategy {
                     double dollarVol = n * valuePerPoint / point;
                     this.unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
                     String entryTime = askTs.get(i).getStart();
-                    this.entryPrice = askTs.get(i).getClose();
-                    double stopPrice = this.entryPrice - 2 * n;
+                    this.entryPrice = rangeHigh;
+                    this.stopPrice = this.entryPrice - 2 * n;
 
-                    int pid = order.MarketBuy(product, entryTime, this.entryPrice, this.unit);
-                    order.StopSell(product, entryTime, stopPrice, this.unit);
+                    order.MarketBuy(product, entryTime, this.entryPrice, this.unit);
+                    order.StopSell(product, entryTime, this.stopPrice, this.unit);
                     state = 1;
 
-                    System.out.println(String.format("n:%f. breakout 20 day high. market buy %d at %f. stop at %f", n, unit, entryPrice, stopPrice));
+                    System.out.format("state:%d, n:%f, ask:%f, bid:%f. breakout 20 day high. market buy %d at %f. stop at %f\n",
+                        state, n, askTs.get(i).getClose(), bidTs.get(i).getClose(), unit, entryPrice, this.stopPrice);
                 }
 			}
 			else if(state < 4) {
                 if(high > this.entryPrice + n /2) {
                     //add one unit until 4 units
                     String entryTime = askTs.get(i).getStart();
-                    this.entryPrice = askTs.get(i).getClose();
+                    this.entryPrice = this.entryPrice + n/2;
+                    this.stopPrice = this.stopPrice + n/2;
                     order.MarketBuy(product, entryTime, this.entryPrice, this.unit);
+                    order.StopSell(product, entryTime, this.stopPrice, this.unit);
 
                     //raise stops for earlier units
                     Position p = order.getPosition(product);
                     List<PendingOrder> list = order.getStopSellOrders(product);
                     for(int k=0; k < list.size(); k++) {
                         PendingOrder po = list.get(k);
-                        double stopPrice = po.getPrice() + n/2;
-                        order.UpdatePendingOrder(po, po.getAmount(), stopPrice);
-                        System.out.println(String.format("adjust stop price to %f", stopPrice));
+                        order.UpdatePendingOrder(po, po.getAmount(), this.stopPrice);
+                        //System.out.println(String.format("adjust stop price to %f", this.stopPrice));
                     }
 
                     state++;
-                    System.out.println(String.format("adding unit. market buy %d at %f", unit, entryPrice));
+                    System.out.format("state:%d, adding unit. market buy %d at %f\n", state, unit, this.entryPrice);
                 }
 			}
 		}

@@ -461,7 +461,7 @@ public class BtOrder extends Order  {
 	}
 
 	/**
-	 * Cancel all stop sell orders of the specified product 
+	 * Cancel all stop sell orders of the specified product
 	 *
 	 * @param product - the specified product
 	 */
@@ -557,7 +557,7 @@ public class BtOrder extends Order  {
                 }
                 this.MarketBuy(po.getProduct(), ask.getStart(), price, po.getAmount());
                 this.DeletePendingOrder(po);
-                //System.out.println("buy limit turns to market buy");
+                //System.out.println("limit buy ===> market buy");
             }
         }
     }
@@ -582,8 +582,8 @@ public class BtOrder extends Order  {
                 }
                 this.MarketBuy(po.getProduct(), ask.getStart(), price, po.getAmount());
                 this.DeletePendingOrder(po);
+                //System.out.println("stop buy ===> market buy");
             }
-            //System.out.println("buy limit turns to market buy");
         }
     }
 
@@ -607,8 +607,8 @@ public class BtOrder extends Order  {
                 }
                 this.MarketSell(po.getProduct(), bid.getStart(), price, po.getAmount() * -1);
                 this.DeletePendingOrder(po);
+                //System.out.println("limit sell ===> market sell");
             }
-            //System.out.println("buy limit turns to market buy");
         }
     }
 
@@ -632,8 +632,8 @@ public class BtOrder extends Order  {
                 }
                 this.MarketSell(po.getProduct(), bid.getStart(), price, po.getAmount() * -1);
                 this.DeletePendingOrder(po);
+                //System.out.println("stop sell ===> market sell");
             }
-            //System.out.println("buy limit turns to market buy");
         }
     }
 }
