@@ -17,6 +17,8 @@
 		<property name="type" column="type" type="string"/>
 		<property name="time" column="time" type="date"/>
 		<property name="price" column="price" type="double"/>
+		<property name="closed" column="closed" type="integer"/>
+		<property name="profit" column="profit" type="double"/>
     </class>
 
 </hibernate-mapping>

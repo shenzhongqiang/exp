@@ -97,7 +97,7 @@ public class BtOrder extends Order  {
 	 * @param product - product to buy (e.g. EURUSD)
      * @param strTime - time of when the order is submitted
      * @param price - the ask price to buy
-	 * @param amount - amount to buy
+	 * @param amount - amount to buy (positive number)
 	 * @return position id
 	 */
 	public int MarketBuy(String product, String strTime, double price, int amount) {
@@ -109,13 +109,17 @@ public class BtOrder extends Order  {
             q.setParameter("product", product);
             List list = q.list();
             Position p = null;
-            if(list.size() == 0) {
+            if(list.size() == 0) { // open new position
                 p = new Position(this.account, product, amount);
                 session.save(p);
             }
-            else if(list.size() == 1) {
+            else if(list.size() == 1) { // add to existing position or close position
                 p = (Position) list.get(0);
                 int totalAmount = p.getAmount() + amount;
+                if(p.getAmount() < 0 && totalAmount > 0) {
+                    throw new CloseMoreThanOpened();
+                }
+
                 if(totalAmount == 0) {
                     session.delete(p);
                 }
@@ -165,6 +169,10 @@ public class BtOrder extends Order  {
             else if(list.size() == 1) {
                 p = (Position) list.get(0);
                 int totalAmount = p.getAmount() - amount;
+                if(p.getAmount() > 0 && totalAmount < 0) {
+                    throw new CloseMoreThanOpened();
+                }
+
                 if(totalAmount == 0) {
                     session.delete(p);
                 }

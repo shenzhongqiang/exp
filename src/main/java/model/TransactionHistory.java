@@ -11,6 +11,8 @@ public class TransactionHistory {
 	private double price;
 	private int amount;
 	private Date time;
+    private int closed;
+    private double profit;
 
 	public TransactionHistory() {
 
@@ -23,6 +25,8 @@ public class TransactionHistory {
 		this.amount = amount;
 		this.time = time;
 		this.type = "";
+        this.closed = 0;
+        this.profit = 0;
 	}
 
 	public int getId() {
@@ -80,6 +84,26 @@ public class TransactionHistory {
 	public void setPrice(double price) {
 		this.price = price;
 	}
+
+    public int getClosed() {
+        return this.closed;
+    }
+
+    public void setClosed(int closed) {
+        this.closed = closed;
+    }
+
+    public double getProfit() {
+        return this.profit;
+    }
+
+    public void setProfit(double profit) {
+        this.profit = profit;
+    }
+
+    public void close(int closeAmount) {
+        this.closed += closeAmount;
+    }
 
     public String toString() {
         SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
