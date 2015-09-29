@@ -44,6 +44,10 @@ public class Account {
 		this.balance = balance;
 	}
 
+    public void addProfit(double profit) {
+        this.balance += profit;
+    }
+
 	public double getEquity() {
 		return this.equity;
 	}

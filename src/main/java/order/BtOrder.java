@@ -40,7 +40,7 @@ public class BtOrder extends Order  {
 	public boolean HasPosition(String product) {
 		Transaction tx = this.session.beginTransaction();
 		Query q = session.createQuery("from Position where account.id = :id and product = :product");
-		q.setParameter("id", account.getId());
+		q.setParameter("id", this.account.getId());
 		q.setParameter("product", product);
 
 		List list = q.list();
@@ -62,7 +62,7 @@ public class BtOrder extends Order  {
 	public Position getPosition(String product) {
 		Transaction tx = this.session.beginTransaction();
 		Query q = session.createQuery("from Position where account.id = :account_id and product = :product");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		List list = q.list();
 		Position p = null;
@@ -81,7 +81,7 @@ public class BtOrder extends Order  {
 	public Position getPosition(int positionId) {
 		Transaction tx = this.session.beginTransaction();
 		Query q = session.createQuery("from Position where account.id = :account_id and id = :positionId");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("positionId", positionId);
 		List list = q.list();
 		Position p = null;
@@ -248,7 +248,7 @@ public class BtOrder extends Order  {
 	 * @param amount - amount to buy, positive number
 	 */
 	private void OpenBuyTransaction(Date time, String product, double price, int amount) {
-        TransactionHistory th = new TransactionHistory(account, time, product, price, amount, 0, 0);
+        TransactionHistory th = new TransactionHistory(this.account, time, product, price, amount, 0, 0);
         session.save(th);
 	}
 
@@ -278,8 +278,10 @@ public class BtOrder extends Order  {
                 double profit = ct.getPl();
                 th.setProfit(th.getProfit()+profit);
                 th.setClosed(closed-remainToClose);
+                this.account.addProfit(profit);
                 remainToClose = 0;
                 session.save(th);
+                session.save(this.account);
                 break;
             }
             else {
@@ -287,12 +289,14 @@ public class BtOrder extends Order  {
                 double profit = ct.getPl();
                 th.setProfit(th.getProfit()+profit);
                 th.setClosed(th.getAmount());
+                this.account.addProfit(profit);
                 remainToClose += openAmount;
                 session.save(th);
+                session.save(this.account);
             }
         }
 
-        TransactionHistory newTranx = new TransactionHistory(account, time, product, price, amount, amount, 0);
+        TransactionHistory newTranx = new TransactionHistory(this.account, time, product, price, amount, amount, 0);
         session.save(newTranx);
 	}
 
@@ -330,7 +334,7 @@ public class BtOrder extends Order  {
 	 * @param amount - amount to sell, positive number
 	 */
 	private void OpenSellTransaction(Date time, String product, double price, int amount) {
-        TransactionHistory th = new TransactionHistory(account, time, product, price, amount*-1, 0, 0);
+        TransactionHistory th = new TransactionHistory(this.account, time, product, price, amount*-1, 0, 0);
         session.save(th);
 	}
 
@@ -360,8 +364,10 @@ public class BtOrder extends Order  {
                 double profit = ct.getPl();
                 th.setProfit(th.getProfit()+profit);
                 th.setClosed(closed+remainToClose);
+                this.account.addProfit(profit);
                 remainToClose = 0;
                 session.save(th);
+                session.save(this.account);
                 break;
             }
             else {
@@ -369,12 +375,14 @@ public class BtOrder extends Order  {
                 double profit = ct.getPl();
                 th.setProfit(th.getProfit()+profit);
                 th.setClosed(th.getAmount());
+                this.account.addProfit(profit);
                 remainToClose -= openAmount;
                 session.save(th);
+                session.save(this.account);
             }
         }
 
-        TransactionHistory newTranx = new TransactionHistory(account, time, product, price, amount*-1, amount*-1, 0);
+        TransactionHistory newTranx = new TransactionHistory(this.account, time, product, price, amount*-1, amount*-1, 0);
         session.save(newTranx);
 	}
 
@@ -593,7 +601,7 @@ public class BtOrder extends Order  {
 	public void CancelAllPendingOrders(String product) {
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("delete from PendingOrder where account.id = :account_id and product = :product");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		q.executeUpdate();
 		tx.commit();
@@ -607,7 +615,7 @@ public class BtOrder extends Order  {
 	public void CancelStopSellOrders(String product) {
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("delete from PendingOrder where account.id = :account_id and product = :product and amount < 0 and type ='stop'");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		q.executeUpdate();
 		tx.commit();
@@ -621,21 +629,21 @@ public class BtOrder extends Order  {
 	public void CancelLimitSellOrders(String product) {
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("delete from PendingOrder where account.id = :account_id and product = :product and amount < 0 and type ='limit'");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		q.executeUpdate();
 		tx.commit();
 	}
 
 	/**
-	 * Cancel all stop buy orders of the specified product 
+	 * Cancel all stop buy orders of the specified product
 	 *
 	 * @param product - the specified product
 	 */
 	public void CancelStopBuyOrders(String product) {
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("delete from PendingOrder where account.id = :account_id and product = :product and amount > 0 and type ='stop'");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		q.executeUpdate();
 		tx.commit();
@@ -649,7 +657,7 @@ public class BtOrder extends Order  {
 	public void CancelLimitBuyOrders(String product) {
 		Transaction tx = session.beginTransaction();
 		Query q = session.createQuery("delete from PendingOrder where account.id = :account_id and product = :product and amount > 0 and type ='limit'");
-		q.setParameter("account_id", account.getId());
+		q.setParameter("account_id", this.account.getId());
 		q.setParameter("product", product);
 		q.executeUpdate();
 		tx.commit();
