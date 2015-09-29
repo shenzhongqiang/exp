@@ -9,6 +9,7 @@ import java.text.ParseException;
 import main.java.model.*;
 import main.java.data.*;
 import main.java.exceptions.*;
+import main.java.report.*;
 
 /**
  * Back-testing order.
@@ -112,27 +113,35 @@ public class BtOrder extends Order  {
             if(list.size() == 0) { // open new position
                 p = new Position(this.account, product, amount);
                 session.save(p);
+                this.OpenBuyTransaction(time, product, price, amount);
             }
             else if(list.size() == 1) { // add to existing position or close position
                 p = (Position) list.get(0);
                 int totalAmount = p.getAmount() + amount;
-                if(p.getAmount() < 0 && totalAmount > 0) {
-                    throw new CloseMoreThanOpened();
-                }
-
-                if(totalAmount == 0) {
-                    session.delete(p);
-                }
-                else {
+                if(p.getAmount() > 0) { // add to existing position
                     p.setAmount(totalAmount);
                     session.update(p);
+                    this.OpenBuyTransaction(time, product, price, amount);
+                }
+                else if(p.getAmount() < 0) { // close existing position
+                    if(totalAmount > 0) {
+                        throw new CloseMoreThanOpened();
+                    }
+                    else if(totalAmount == 0) {
+                        session.delete(p);
+                        this.CloseBuyTransaction(time, product, price, amount);
+                    }
+                    else {
+                        p.setAmount(totalAmount);
+                        session.update(p);
+                        this.CloseBuyTransaction(time, product, price, amount);
+                    }
                 }
             }
             else {
                 throw new MultiplePositions(product);
             }
 			tx.commit();
-			this.SaveBuyTransaction(strTime, product, price, amount);
 			System.out.println(String.format("%s - buy %d mini lot %s at %f", strTime, amount, product, price));
 			return p.getId();
 		}
@@ -165,27 +174,35 @@ public class BtOrder extends Order  {
             if(list.size() == 0) {
                 p = new Position(this.account, product, amount*-1);
                 session.save(p);
+                this.OpenSellTransaction(time, product, price, amount);
             }
-            else if(list.size() == 1) {
+            else if(list.size() == 1) { // add to existing position or close position
                 p = (Position) list.get(0);
                 int totalAmount = p.getAmount() - amount;
-                if(p.getAmount() > 0 && totalAmount < 0) {
-                    throw new CloseMoreThanOpened();
-                }
-
-                if(totalAmount == 0) {
-                    session.delete(p);
-                }
-                else {
+                if(p.getAmount() < 0) { // add to existing position
                     p.setAmount(totalAmount);
                     session.update(p);
+                    this.OpenSellTransaction(time, product, price, amount);
+                }
+                else if(p.getAmount() > 0) { // close existing position
+                    if(totalAmount < 0) {
+                        throw new CloseMoreThanOpened();
+                    }
+                    else if(totalAmount == 0) {
+                        session.delete(p);
+                        this.CloseSellTransaction(time, product, price, amount);
+                    }
+                    else {
+                        p.setAmount(totalAmount);
+                        session.update(p);
+                        this.CloseSellTransaction(time, product, price, amount);
+                    }
                 }
             }
             else {
                 throw new MultiplePositions(product);
             }
 			tx.commit();
-			this.SaveSellTransaction(strTime, product, price, amount*-1);
 			System.out.println(String.format("%s - sell %d mini lot %s at %f", strTime, amount, product, price));
 			return p.getId();
 		}
@@ -204,7 +221,6 @@ public class BtOrder extends Order  {
 	 * @param product - product to buy (e.g. EURUSD)
 	 * @param price - the bid price to buy
 	 * @param amount - amount to buy
-	 */
 	private void SaveBuyTransaction(String strTime, String product, double price, int amount) {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -221,6 +237,64 @@ public class BtOrder extends Order  {
 			ex.printStackTrace();
 		}
 	}
+	 */
+
+	/**
+	 * Open buy transaction
+	 *
+	 * @param time - time of when the transaction is saved
+	 * @param product - product to buy (e.g. EURUSD)
+	 * @param price - the bid price to buy
+	 * @param amount - amount to buy, positive number
+	 */
+	private void OpenBuyTransaction(Date time, String product, double price, int amount) {
+        TransactionHistory th = new TransactionHistory(account, time, product, price, amount, 0, 0);
+        session.save(th);
+	}
+
+	/**
+	 * Close buy, buy to cover transaction
+	 *
+	 * @param time - time of when the transaction is saved
+	 * @param product - product to buy (e.g. EURUSD)
+	 * @param price - the bid price to buy
+	 * @param amount - amount to buy, positive number
+	 */
+	private void CloseBuyTransaction(Date time, String product, double price, int amount) {
+		Query q = session.createQuery("from TransactionHistory where product = :product and amount < 0 and closed > amount order by time asc");
+		q.setParameter("product", product);
+		List<TransactionHistory> list = q.list();
+        if(list.size() == 0) {
+            throw new NoMatchedOpenTransaction();
+        }
+        int remainToClose = amount;
+        for(TransactionHistory th: list) {
+            int closed = th.getClosed();
+            int openAmount = th.getAmount() - th.getClosed();
+            double openPrice = th.getPrice();
+            Date openTime = th.getTime();
+            if(remainToClose+openAmount < 0) {
+                ClosedTransaction ct = new ClosedTransaction(openTime, "buy", remainToClose*-1, product, openPrice, time, price);
+                double profit = ct.getPl();
+                th.setProfit(th.getProfit()+profit);
+                th.setClosed(closed-remainToClose);
+                remainToClose = 0;
+                session.save(th);
+                break;
+            }
+            else {
+                ClosedTransaction ct = new ClosedTransaction(openTime, "buy", openAmount, product, openPrice, time, price);
+                double profit = ct.getPl();
+                th.setProfit(th.getProfit()+profit);
+                th.setClosed(th.getAmount());
+                remainToClose += openAmount;
+                session.save(th);
+            }
+        }
+
+        TransactionHistory newTranx = new TransactionHistory(account, time, product, price, amount, amount, 0);
+        session.save(newTranx);
+	}
 
 	/**
 	 * Save sell transaction
@@ -229,7 +303,6 @@ public class BtOrder extends Order  {
 	 * @param product - product to sell (e.g. EURUSD)
 	 * @param price - the bid price to sell
 	 * @param amount - amount to sell
-	 */
 	private void SaveSellTransaction(String strTime, String product, double price, int amount) {
 		try {
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -245,6 +318,64 @@ public class BtOrder extends Order  {
 			System.out.println("Error occurred when parsing " + strTime);
 			ex.printStackTrace();
 		}
+	}
+	 */
+
+	/**
+	 * Open sell transaction
+	 *
+	 * @param time - time of when the transaction is saved
+	 * @param product - product to sell (e.g. EURUSD)
+	 * @param price - the bid price to sell
+	 * @param amount - amount to sell, positive number
+	 */
+	private void OpenSellTransaction(Date time, String product, double price, int amount) {
+        TransactionHistory th = new TransactionHistory(account, time, product, price, amount*-1, 0, 0);
+        session.save(th);
+	}
+
+	/**
+	 * Close sell, sell to close long position
+	 *
+	 * @param time - time of when the transaction is saved
+	 * @param product - product to sell (e.g. EURUSD)
+	 * @param price - the bid price to sell
+	 * @param amount - amount to sell, positive number
+	 */
+	private void CloseSellTransaction(Date time, String product, double price, int amount) {
+		Query q = session.createQuery("from TransactionHistory where product = :product and amount > 0 and closed < amount order by time asc");
+		q.setParameter("product", product);
+		List<TransactionHistory> list = q.list();
+        if(list.size() == 0) {
+            throw new NoMatchedOpenTransaction();
+        }
+        int remainToClose = amount;
+        for(TransactionHistory th: list) {
+            int closed = th.getClosed();
+            int openAmount = th.getAmount() - th.getClosed();
+            double openPrice = th.getPrice();
+            Date openTime = th.getTime();
+            if(remainToClose <= openAmount) {
+                ClosedTransaction ct = new ClosedTransaction(openTime, "sell", remainToClose, product, openPrice, time, price);
+                double profit = ct.getPl();
+                th.setProfit(th.getProfit()+profit);
+                th.setClosed(closed+remainToClose);
+                remainToClose = 0;
+                session.save(th);
+                break;
+            }
+            else {
+                ClosedTransaction ct = new ClosedTransaction(openTime, "sell", openAmount, product, openPrice, time, price);
+                double profit = ct.getPl();
+                th.setProfit(th.getProfit()+profit);
+                th.setClosed(th.getAmount());
+                remainToClose -= openAmount;
+                session.save(th);
+            }
+        }
+
+        TransactionHistory newTranx = new TransactionHistory(account, time, product, price, amount*-1, amount*-1, 0);
+        session.save(newTranx);
 	}
 
 	/**

@@ -12,7 +12,7 @@ public class OpenTransaction extends TransactionHistory {
     }
 
     public OpenTransaction(Account account, Date time, String product, double price, int amount) {
-        super(account, time, product, price, amount);
+        super(account, time, product, price, amount, 0, 0);
         this.openAmount = amount;
     }
 

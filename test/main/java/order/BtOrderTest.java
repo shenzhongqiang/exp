@@ -42,15 +42,197 @@ public class BtOrderTest {
     }
 
 	@Test
-	public void testMarketBuy() throws Exception {
+	public void testMarketBuy1() throws Exception {
 		Order order = new BtOrder(this.session, this.account);
         String product = "EURUSD";
         order.MarketBuy(product, "2015-09-07 00:00:00", 1.10, 2);
         assertTrue(order.HasPosition("EURUSD"));
         Query q = this.session.createQuery("from Position where product = :product");
         q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
         Position p = (Position) q.list().get(0);
         assertEquals(p.getAmount(), 2);
+        q = this.session.createQuery("from TransactionHistory where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), 0);
+        assertEquals(th.getProfit(), 0, 0.001);
+	}
+
+	@Test
+	public void testMarketBuy2() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketBuy(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketSell(product, "2015-09-08 00:00:00", 1.20, 2);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 2);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), 2);
+        assertEquals(th.getProfit(), 200, 0.0001);
+	}
+
+	@Test
+	public void testMarketBuy3() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketBuy(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketSell(product, "2015-09-08 00:00:00", 1.20, 1);
+        order.MarketSell(product, "2015-09-09 00:00:00", 1.30, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 3);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), 2);
+        assertEquals(th.getProfit(), 300, 0.0001);
+	}
+
+	@Test
+	public void testMarketBuy4() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketBuy(product, "2015-09-07 00:00:00", 1.10, 2);
+        order.MarketBuy(product, "2015-09-08 00:00:00", 1.20, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketSell(product, "2015-09-09 00:00:00", 1.30, 3);
+        order.MarketSell(product, "2015-09-10 00:00:00", 1.40, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 4);
+        TransactionHistory th1 = (TransactionHistory) q.list().get(0);
+        assertEquals(th1.getClosed(), 2);
+        assertEquals(th1.getProfit(), 400, 0.0001);
+        TransactionHistory th2 = (TransactionHistory) q.list().get(1);
+        assertEquals(th2.getClosed(), 2);
+        assertEquals(th2.getProfit(), 300, 0.0001);
+	}
+
+	@Test
+	public void testMarketBuy5() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketBuy(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketSell(product, "2015-09-09 00:00:00", 1.20, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 2);
+        TransactionHistory th1 = (TransactionHistory) q.list().get(0);
+        assertEquals(th1.getClosed(), 1);
+        assertEquals(th1.getProfit(), 100, 0.0001);
+	}
+
+	@Test
+	public void testMarketSell1() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketSell(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
+        Position p = (Position) q.list().get(0);
+        assertEquals(p.getAmount(), -2);
+        q = this.session.createQuery("from TransactionHistory where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), 0);
+        assertEquals(th.getProfit(), 0, 0.001);
+	}
+
+	@Test
+	public void testMarketSell2() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketSell(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketBuy(product, "2015-09-08 00:00:00", 1.20, 2);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 2);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), -2);
+        assertEquals(th.getProfit(), -200, 0.0001);
+	}
+
+	@Test
+	public void testMarketSell3() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketSell(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketBuy(product, "2015-09-08 00:00:00", 1.20, 1);
+        order.MarketBuy(product, "2015-09-09 00:00:00", 1.30, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 3);
+        TransactionHistory th = (TransactionHistory) q.list().get(0);
+        assertEquals(th.getClosed(), -2);
+        assertEquals(th.getProfit(), -300, 0.0001);
+	}
+
+	@Test
+	public void testMarketSell4() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketSell(product, "2015-09-07 00:00:00", 1.10, 2);
+        order.MarketSell(product, "2015-09-08 00:00:00", 1.20, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketBuy(product, "2015-09-09 00:00:00", 1.30, 3);
+        order.MarketBuy(product, "2015-09-10 00:00:00", 1.40, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 0);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 4);
+        TransactionHistory th1 = (TransactionHistory) q.list().get(0);
+        assertEquals(th1.getClosed(), -2);
+        assertEquals(th1.getProfit(), -400, 0.0001);
+        TransactionHistory th2 = (TransactionHistory) q.list().get(1);
+        assertEquals(th2.getClosed(), -2);
+        assertEquals(th2.getProfit(), -300, 0.0001);
+	}
+
+	@Test
+	public void testMarketSell5() throws Exception {
+		Order order = new BtOrder(this.session, this.account);
+        String product = "EURUSD";
+        order.MarketSell(product, "2015-09-07 00:00:00", 1.10, 2);
+        assertTrue(order.HasPosition("EURUSD"));
+        order.MarketBuy(product, "2015-09-09 00:00:00", 1.20, 1);
+        Query q = this.session.createQuery("from Position where product = :product");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 1);
+        q = this.session.createQuery("from TransactionHistory where product = :product order by time asc");
+        q.setParameter("product", product);
+        assertEquals(q.list().size(), 2);
+        TransactionHistory th1 = (TransactionHistory) q.list().get(0);
+        assertEquals(th1.getClosed(), -1);
+        assertEquals(th1.getProfit(), -100, 0.0001);
 	}
 
     @Test

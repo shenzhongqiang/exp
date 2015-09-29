@@ -18,15 +18,15 @@ public class TransactionHistory {
 
 	}
 
-	public TransactionHistory(Account account, Date time, String product, double price, int amount) {
+	public TransactionHistory(Account account, Date time, String product, double price, int amount, int closed, double profit) {
 		this.account = account;
 		this.product = product;
 		this.price = price;
 		this.amount = amount;
 		this.time = time;
+        this.closed = closed;
+        this.profit = profit;
 		this.type = "";
-        this.closed = 0;
-        this.profit = 0;
 	}
 
 	public int getId() {
