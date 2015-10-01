@@ -68,7 +68,7 @@ public class MarketData {
 		return this.Close;
 	}
 
-	public double getVolume() {
+	public int getVolume() {
 		return this.volume;
 	}
 
