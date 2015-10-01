@@ -65,7 +65,7 @@
           -->
             <arg line="--timeframe H1" />
             <arg line="--datefrom 2014-07-01" />
-            <arg line="--dateto 2015-09-20" />
+            <arg line="--dateto 2015-09-29" />
             <arg line="--login D181913708001" />
             <arg line="--password 7217" />
             <arg line="--url http://www.fxcorporate.com/Hosts.jsp" />

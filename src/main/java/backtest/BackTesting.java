@@ -1,12 +1,13 @@
 package main.java.backtest;
+import org.hibernate.*;
+import org.hibernate.cfg.*;
+import java.util.*;
+import java.io.*;
 import main.java.data.*;
 import main.java.strategy.*;
 import main.java.model.*;
 import main.java.order.*;
 import main.java.report.*;
-import org.hibernate.*;
-import org.hibernate.cfg.*;
-import java.util.*;
 
 public class BackTesting {
 
@@ -32,7 +33,8 @@ public class BackTesting {
 		Order order = new BtOrder(session, account);
 		Strategy strategy = new TurtleStrategy(order);
 
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-01-01", "2015-09-15");
+        File historyFile = new File("src/main/java/history/XAUUSDH1");
+		MarketDataPusher mdp = new MarketDataPusher("XAUUSD", 60, "2015-01-01", "2015-09-15", historyFile);
 		int barNum = mdp.getBarNum();
 
 		// attach order as subscriber for market data

@@ -123,6 +123,9 @@ public class TurtleStrategy extends Strategy {
                     double valuePerPoint = CurrencyTable.getValuePerPoint(product);
                     double dollarVol = n * valuePerPoint / point;
                     this.unit = (int) Math.floor(0.01 * order.getAccount().getBalance() / dollarVol);
+                    if(this.unit == 0) {
+                        return;
+                    }
                     String entryTime = askTs.get(i).getStart();
                     this.entryPrice = rangeHigh;
                     this.stopPrice = this.entryPrice - 2 * n;

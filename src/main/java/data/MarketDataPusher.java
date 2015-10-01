@@ -37,7 +37,7 @@ public class MarketDataPusher {
 	 * @param end - end time
 	 */
 	public MarketDataPusher(String product, int timeframe,
-			String start, String end) {
+			String start, String end, File historyFile) {
 		this.product = product;
 		this.timeframe = timeframe;
 
@@ -64,8 +64,6 @@ public class MarketDataPusher {
 		this.bidBuffer = new ArrayList<MarketData>();
 		// store all market data ranging from start to end into bid and ask buffer
         String sTimeframe = String.format("m%d", timeframe);
-        File historyFile = main.java.marketdataminer.Main.getHistoryFile(
-            this.product, sTimeframe);
         HashMap<String, ArrayList<MarketData>> hm = readMarketData(product, historyFile);
         for(int i=0; i < hm.get("ask").size(); i++) {
             Date date = hm.get("ask").get(i).getStartDate();
@@ -124,7 +122,7 @@ public class MarketDataPusher {
 		this.orders.remove(o);
 	}
 
-	private static HashMap<String, ArrayList<MarketData>> readMarketData(String product, File file) {
+	public static HashMap<String, ArrayList<MarketData>> readMarketData(String product, File file) {
 
 		ArrayList<MarketData> bids = new ArrayList<MarketData>();
 		ArrayList<MarketData> asks = new ArrayList<MarketData>();
