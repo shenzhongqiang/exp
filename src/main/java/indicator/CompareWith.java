@@ -43,6 +43,6 @@ public class CompareWith extends Indicator {
         if(this.curr == 0) {
             return new ArrayList<MarketData>();
         }
-        return new ArrayList<MarketData>(this.dataBuffer.subList(0, this.curr));
+        return new ArrayList<MarketData>(this.dataBuffer.subList(0, this.curr+1));
 	}
 }

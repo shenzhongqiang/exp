@@ -16,7 +16,7 @@ public class CompareWithTest {
             1.1100, 1.1110, 1.1150, 1.1000, 1000);
         cw.Update(data);
         ArrayList<MarketData> md = cw.getMarketData();
-        System.out.println(md.get(md.size()-1));
+        assertEquals(md.get(md.size()-1).getStart(), "2015-09-01 00:10:00");
         assertTrue(md.size() > 0);
         assertEquals(md.get(0).getProduct(), "GBPUSD");
 	}
