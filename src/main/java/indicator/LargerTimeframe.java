@@ -58,14 +58,10 @@ public class LargerTimeframe extends Indicator {
 	/**
 	 * Get merged market data
 	 *
-	 * @return market data {@link MarketData}
+	 * @return market data {@link ArrayList<MarketData>}
 	 */
-	public MarketData getMarketData() {
-        if(this.curr == -1) {
-            throw new NoMarketData();
-        }
-
-        return this.mergedTimeSeries.get(this.curr);
+	public ArrayList<MarketData> getMarketData() {
+        return this.mergedTimeSeries;
 	}
 
     private double getMergedOpen() {

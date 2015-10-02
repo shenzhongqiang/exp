@@ -26,6 +26,10 @@ public class CompareWith extends Indicator {
 	}
 
 	public void Update(MarketData data) {
+        if(this.dataBuffer.isEmpty()) {
+            throw new MissingMarketData();
+        }
+
         while(this.curr < this.dataBuffer.size()) {
             Date currDate = this.dataBuffer.get(this.curr).getStartDate();
             if(currDate.compareTo(data.getStartDate()) >= 0) {
@@ -33,14 +37,12 @@ public class CompareWith extends Indicator {
             }
             this.curr++;
         }
-        Date currDate = this.dataBuffer.get(this.curr).getStartDate();
-        if(currDate.compareTo(data.getStartDate()) > 0) {
-            throw new MissingMarketData();
-        }
 	}
 
-	public MarketData getMarketData() {
-        return this.dataBuffer.get(this.curr);
+	public ArrayList<MarketData> getMarketData() {
+        if(this.curr == 0) {
+            return new ArrayList<MarketData>();
+        }
+        return new ArrayList<MarketData>(this.dataBuffer.subList(0, this.curr));
 	}
 }
-
