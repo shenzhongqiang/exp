@@ -128,4 +128,13 @@ public class OpenTransactionList {
         }
         return closed;
     }
+
+    public String toString() {
+        String strOpenList = "";
+        for(OpenTransaction ot: this.openList) {
+            strOpenList += ot.toString();
+        }
+        String str = String.format("<OpenTransactionList openAmount=[%d]\nopenList=[%s]>", this.openAmount, strOpenList);
+        return str;
+    }
 }

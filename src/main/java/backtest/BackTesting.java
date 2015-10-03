@@ -11,7 +11,7 @@ import main.java.report.*;
 
 public class BackTesting {
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		// Default account is account with id 1
 		Session session = HibernateUtil.getSessionFactory().openSession();
 		// initialize
@@ -31,10 +31,10 @@ public class BackTesting {
 
 		// create new order object and turtle strategy object
 		Order order = new BtOrder(session, account);
-		Strategy strategy = new TurtleStrategy(order);
+		Strategy strategy = new GoldStrategy(order);
 
         File historyFile = new File("src/main/java/history/XAUUSDH1");
-		MarketDataPusher mdp = new MarketDataPusher("XAUUSD", 60, "2015-01-01", "2015-09-15", historyFile);
+		MarketDataPusher mdp = new MarketDataPusher("XAUUSD", 60, "2015-09-01", "2015-09-29", historyFile);
 		int barNum = mdp.getBarNum();
 
 		// attach order as subscriber for market data
@@ -55,14 +55,9 @@ public class BackTesting {
 		}
 
 		// generate profit loss report
-		try {
-			Report report = new Report(session, account);
-			double totalPl = report.getProfitLoss();
-			System.out.println("Total P/L:" + totalPl);
-		}
-		catch(Exception ex) {
-			System.out.println(ex.getMessage());
-		}
+        Report report = new Report(session, account);
+        double totalPl = report.getProfitLoss();
+        System.out.println("Total P/L:" + totalPl);
 
 		// close database connection
 		session.close();

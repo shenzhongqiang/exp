@@ -31,6 +31,7 @@ public class TurtleStrategy extends Strategy {
 	private RangeHigh high20;
 	// indicator - 10 day low
 	private RangeLow low10;
+    private Ema ema200;
 	// unit when opening position, will be used later when adding positions
 	private int unit = 0;
 
@@ -46,6 +47,7 @@ public class TurtleStrategy extends Strategy {
 		this.atr = new AverageTrueRange(20);
 		this.high20 = new RangeHigh(20);
 		this.low10 = new RangeLow(10);
+        this.ema200 = new Ema(200);
 	}
 
 	/**
@@ -62,6 +64,7 @@ public class TurtleStrategy extends Strategy {
 		atr.Update(bid);
 		high20.Update(ask);
 		low10.Update(bid);
+        ema200.Update(bid);
 		Run(product);
 	}
 
@@ -82,8 +85,8 @@ public class TurtleStrategy extends Strategy {
 				askTs.get(i).getHigh()));
 		*/
 
-		// skip first 50 market data to give room for calculating indicators
-		if(i < 50) {
+		// skip first several bars to give room for calculating indicators
+		if(i < 400) {
 			return;
 		}
 
@@ -96,9 +99,14 @@ public class TurtleStrategy extends Strategy {
                 order.getPosition(product);
             }
 
-			//close positions if breakout 10 day low
 			double rangeLow = low10.getRangeLow(i - 1);
 			double low = bidTs.get(i).getLow();
+            double lastLow = bidTs.get(i-1).getLow();
+			double rangeHigh = high20.getRangeHigh(i - 1);
+			double high = bidTs.get(i).getHigh();
+            double ema = ema200.getEma(i-1);
+
+			//close positions if breakout 10 day low
 			if(state > 0 && low < rangeLow) {
 				// close position
 				Position p = order.getPosition(product);
@@ -111,12 +119,10 @@ public class TurtleStrategy extends Strategy {
 			}
 
 
-			//check for open new positions
-			double rangeHigh = high20.getRangeHigh(i - 1);
-			double high = bidTs.get(i).getHigh();
 
 			if(state == 0) {
-                if(high > rangeHigh) {
+                // check if condition is met
+                if(high > rangeHigh && lastLow > ema) {
                     // buy one unit
                     n = this.atr.getAtr(i - 1);
                     double point = CurrencyTable.getPoint(product);
