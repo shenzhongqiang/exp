@@ -41,7 +41,7 @@ public class MarketDataPusher {
 		this.product = product;
 		this.timeframe = timeframe;
 
-		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd");
+		SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		try {
 			this.start = ft.parse(start);
 		}

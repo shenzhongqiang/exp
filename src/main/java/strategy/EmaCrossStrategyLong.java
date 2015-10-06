@@ -8,6 +8,7 @@ import main.java.indicator.*;
 import main.java.model.*;
 import main.java.subscriber.*;
 import main.java.order.Order;
+import main.java.product.*;
 
 /**
  * EMA Cross Strategy
@@ -76,7 +77,7 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 		int i = bidTs.size() - 1;
 
 		// skip first 100 market data to give room for calculating indicators
-		if(i < 300) {
+		if(i < 20) {
 			return;
 		}
 
@@ -134,9 +135,12 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
                         String entryTime = askTs.get(i).getStart();
                         entryPrice = ask;
                         takeProfit = ask + r;
-                        unit = 2;
-                        this.positionId = order.MarketBuy(product, entryTime, ask, unit);
-                        order.StopSell(product, entryTime, stopPrice, unit);
+                        double point = CurrencyTable.getPoint(product);
+                        double valuePerPoint = CurrencyTable.getValuePerPoint(product);
+                        double balance = order.getAccount().getBalance();
+                        this.unit = (int) (0.01 * balance / valuePerPoint / (r/point));
+                        order.MarketBuy(product, entryTime, ask, this.unit);
+                        order.StopSell(product, entryTime, stopPrice, this.unit);
                         state = 1;
                     }
                 }
@@ -145,14 +149,13 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 				double high = bidTs.get(i).getHigh();
                 double low = askTs.get(i).getLow();
 				String exitTime = bidTs.get(i).getStart();
-
                 if(isLastBar(bidTs.get(i).getStartDate())) {
-                    order.MarketBuy(product, exitTime, ask, 2);
+                    order.MarketSell(product, exitTime, bid, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
                 }
-				else if(crossedUp) {
-                    order.MarketSell(product, exitTime, bid, 1);
+				else if(crossedDown) {
+                    order.MarketSell(product, exitTime, bid, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
 				}

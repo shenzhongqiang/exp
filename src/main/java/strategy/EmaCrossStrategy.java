@@ -85,7 +85,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				askTs.get(i).getHigh()));
 		*/
 		// skip first 100 market data to give room for calculating indicators
-		if(i < 300) {
+		if(i < 20) {
 			return;
 		}
 

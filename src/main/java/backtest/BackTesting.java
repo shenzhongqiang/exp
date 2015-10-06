@@ -31,10 +31,10 @@ public class BackTesting {
 
 		// create new order object and turtle strategy object
 		Order order = new BtOrder(session, account);
-		Strategy strategy = new EmaCrossStrategy(order);
+		Strategy strategy = new EmaCrossStrategyLong(order);
 
         File historyFile = new File("src/main/java/history/EURUSDm5");
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-01-05 05:00:00", "2015-01-16 05:00:00", historyFile);
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-05-06 05:00:00", "2015-05-07 05:00:00", historyFile);
 		int barNum = mdp.getBarNum();
 
 		// attach order as subscriber for market data
