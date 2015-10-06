@@ -11,4 +11,17 @@ public abstract class Strategy implements Subscriber {
 	protected Order order;
 	protected ArrayList<MarketData> askTs;
 	protected ArrayList<MarketData> bidTs;
+
+    public boolean isLastBar(Date time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+        int day = cal.get(Calendar.DAY_OF_WEEK);
+        int hour = cal.get(Calendar.HOUR);
+        int minute = cal.get(Calendar.MINUTE);
+        if(day == 6 && hour == 4 && minute >=55) {
+            return true;
+        }
+
+        return false;
+    }
 }

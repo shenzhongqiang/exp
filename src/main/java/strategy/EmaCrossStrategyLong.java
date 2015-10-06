@@ -14,7 +14,7 @@ import main.java.order.Order;
  *
  * @author Zhongqiang Shen
  */
-public class EmaCrossStrategy extends Strategy implements Subscriber {
+public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 	// state
 	// 0 - no open position
 	// 1 - has position
@@ -37,7 +37,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	 *
 	 * @param order - the specified order {@link Order}
 	 */
-	public EmaCrossStrategy(Order order) {
+	public EmaCrossStrategyLong(Order order) {
 		this.order = order;
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
@@ -75,15 +75,6 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	public void Run(String product) {
 		int i = bidTs.size() - 1;
 
-
-		/*
-		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f",
-				bidTs.get(i).getClose(),
-				bidTs.get(i).getLow(),
-				bidTs.get(i).getHigh(),
-				bidTs.get(i).getOpen(),
-				askTs.get(i).getHigh()));
-		*/
 		// skip first 100 market data to give room for calculating indicators
 		if(i < 300) {
 			return;
@@ -144,20 +135,8 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
                         entryPrice = ask;
                         takeProfit = ask + r;
                         unit = 2;
-                        order.MarketBuy(product, entryTime, ask, unit);
+                        this.positionId = order.MarketBuy(product, entryTime, ask, unit);
                         order.StopSell(product, entryTime, stopPrice, unit);
-                        state = 1;
-                    }
-                    if(crossedDown) {
-                        double rangeHigh = high10.getRangeHigh(i);
-                        this.stopPrice = rangeHigh + 0.0002;
-                        r = bid - stopPrice;
-                        String entryTime = bidTs.get(i).getStart();
-                        entryPrice = bid;
-                        takeProfit = bid + r;
-                        unit = 2;
-                        order.MarketSell(product, entryTime, ask, unit);
-                        order.StopBuy(product, entryTime, stopPrice, unit);
                         state = 1;
                     }
                 }
@@ -168,38 +147,14 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				String exitTime = bidTs.get(i).getStart();
 
                 if(isLastBar(bidTs.get(i).getStartDate())) {
-                    if(r > 0) {
-                        order.MarketSell(product, exitTime, bid, 2);
-                    }
-                    else {
-                        order.MarketBuy(product, exitTime, ask, 2);
-                    }
+                    order.MarketBuy(product, exitTime, ask, 2);
 					order.CancelAllPendingOrders(product);
                     state = 0;
                 }
-				else if(r > 0 && crossedDown) {
-                    order.MarketSell(product, exitTime, bid, 2);
+				else if(crossedUp) {
+                    order.MarketSell(product, exitTime, bid, 1);
 					order.CancelAllPendingOrders(product);
-
-                    double rangeHigh = high10.getRangeHigh(i);
-                    this.stopPrice = rangeHigh + 0.0002;
-                    r = bid - stopPrice;
-                    String entryTime = askTs.get(i).getStart();
-                    order.MarketSell(product, entryTime, bid, 2);
-                    order.StopSell(product, entryTime, stopPrice, 2);
-                    state = 1;
-				}
-				else if(r < 0 && crossedUp) {
-                    order.MarketBuy(product, exitTime, ask, 2);
-					order.CancelAllPendingOrders(product);
-
-                    double rangeLow = low10.getRangeLow(i);
-                    this.stopPrice = rangeLow - 0.0002;
-                    r = ask - stopPrice;
-                    String entryTime = askTs.get(i).getStart();
-                    order.MarketBuy(product, entryTime, ask, 2);
-                    order.StopBuy(product, entryTime, stopPrice, 2);
-                    state = 1;
+                    state = 0;
 				}
 			}
 		}

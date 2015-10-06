@@ -14,7 +14,7 @@ import main.java.order.Order;
  *
  * @author Zhongqiang Shen
  */
-public class EmaCrossStrategy extends Strategy implements Subscriber {
+public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 	// state
 	// 0 - no open position
 	// 1 - has position
@@ -37,7 +37,7 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 	 *
 	 * @param order - the specified order {@link Order}
 	 */
-	public EmaCrossStrategy(Order order) {
+	public EmaCrossStrategyShort(Order order) {
 		this.order = order;
 		this.bidTs = new ArrayList<MarketData>();
 		this.askTs = new ArrayList<MarketData>();
@@ -134,32 +134,19 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 			boolean crossedDown = prevEma10 > prevEma20 && currEma10 < currEma20;
 			//boolean isUpTrend = currEma10 > currEma200 && prevEma20 > prevEma200;
 			if(state == 0) {
-                if(!isLastBar(bidTs.get(i).getStartDate())) {
-                    if(crossedUp) {
-                        double rangeLow = low10.getRangeLow(i);
+                if(!isLastBar(bidTs.get(i).getStartDate()) && crossedDown) {
+                    double rangeHigh = high10.getRangeHigh(i);
 
-                        this.stopPrice = rangeLow - 0.0002;
-                        r = ask - stopPrice;
-                        String entryTime = askTs.get(i).getStart();
-                        entryPrice = ask;
-                        takeProfit = ask + r;
-                        unit = 2;
-                        order.MarketBuy(product, entryTime, ask, unit);
-                        order.StopSell(product, entryTime, stopPrice, unit);
-                        state = 1;
-                    }
-                    if(crossedDown) {
-                        double rangeHigh = high10.getRangeHigh(i);
-                        this.stopPrice = rangeHigh + 0.0002;
-                        r = bid - stopPrice;
-                        String entryTime = bidTs.get(i).getStart();
-                        entryPrice = bid;
-                        takeProfit = bid + r;
-                        unit = 2;
-                        order.MarketSell(product, entryTime, ask, unit);
-                        order.StopBuy(product, entryTime, stopPrice, unit);
-                        state = 1;
-                    }
+                    this.stopPrice = rangeHigh + 0.0002;
+                    r = bid - stopPrice;
+                    String entryTime = bidTs.get(i).getStart();
+                    entryPrice = bid;
+                    takeProfit = bid + r;
+                    unit = 2;
+                    this.positionId = order.MarketSell(product, entryTime, ask, unit);
+                    order.StopBuy(product, entryTime, stopPrice, unit);
+                    state = 1;
+                    //System.out.println(String.format("r:%f, rangeLow:%f, market buy %d at %f. SL at %f.", r, rangeLow, unit, ask, stopPrice));
                 }
 			}
 			else if(state == 1) {
@@ -168,40 +155,17 @@ public class EmaCrossStrategy extends Strategy implements Subscriber {
 				String exitTime = bidTs.get(i).getStart();
 
                 if(isLastBar(bidTs.get(i).getStartDate())) {
-                    if(r > 0) {
-                        order.MarketSell(product, exitTime, bid, 2);
-                    }
-                    else {
-                        order.MarketBuy(product, exitTime, ask, 2);
-                    }
+                    order.MarketBuy(product, exitTime, ask, 2);
 					order.CancelAllPendingOrders(product);
                     state = 0;
                 }
-				else if(r > 0 && crossedDown) {
-                    order.MarketSell(product, exitTime, bid, 2);
-					order.CancelAllPendingOrders(product);
-
-                    double rangeHigh = high10.getRangeHigh(i);
-                    this.stopPrice = rangeHigh + 0.0002;
-                    r = bid - stopPrice;
-                    String entryTime = askTs.get(i).getStart();
-                    order.MarketSell(product, entryTime, bid, 2);
-                    order.StopSell(product, entryTime, stopPrice, 2);
-                    state = 1;
-				}
-				else if(r < 0 && crossedUp) {
+                else if(crossedUp) {
                     order.MarketBuy(product, exitTime, ask, 2);
 					order.CancelAllPendingOrders(product);
-
-                    double rangeLow = low10.getRangeLow(i);
-                    this.stopPrice = rangeLow - 0.0002;
-                    r = ask - stopPrice;
-                    String entryTime = askTs.get(i).getStart();
-                    order.MarketBuy(product, entryTime, ask, 2);
-                    order.StopBuy(product, entryTime, stopPrice, 2);
-                    state = 1;
-				}
+                    state = 0;
+                }
 			}
+
 		}
 		catch(Exception ex) {
 			System.out.println(ex.getCause());
