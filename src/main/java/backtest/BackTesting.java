@@ -34,7 +34,7 @@ public class BackTesting {
 		Strategy strategy = new EmaCrossStrategyShort(order);
 
         File historyFile = new File("src/main/java/history/EURUSDm5");
-		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-03-16 05:00:00", "2015-05-15 05:00:00", historyFile);
+		MarketDataPusher mdp = new MarketDataPusher("EURUSD", 5, "2015-01-16 05:00:00", "2015-05-15 05:00:00", historyFile);
 		int barNum = mdp.getBarNum();
 
 		// attach order as subscriber for market data

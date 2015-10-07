@@ -2,7 +2,7 @@ package main.java.strategy;
 
 import java.util.*;
 import java.text.*;
-
+import java.io.*;
 import main.java.data.MarketData;
 import main.java.indicator.*;
 import main.java.model.*;
@@ -29,6 +29,7 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 	private Ema ema10;
 	private Ema ema20;
 	private Ema ema200;
+    private MarketDataFromFile mdff;
 	private RangeLow low10;
 	private RangeHigh high10;
 	private int positionId = 0;
@@ -47,6 +48,8 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 		this.ema200 = new Ema(200);
 		this.low10 = new RangeLow(10);
 		this.high10 = new RangeHigh(10);
+        File historyFile = new File("src/main/java/history/EURUSDD1");
+        this.mdff = new MarketDataFromFile("EURUSD", 1440, historyFile);
 	}
 
 	/**
@@ -65,6 +68,7 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 		ema200.Update(bid);
 		low10.Update(bid);
 		high10.Update(bid);
+        mdff.Update(ask);
 		Run(product);
 	}
 
@@ -121,12 +125,21 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 			double currEma200 = ema200.getEma(i);
 			double ask = askTs.get(i).getClose();
 			double bid = bidTs.get(i).getClose();
+            ArrayList<MarketData> daySeries = mdff.getMarketData();
+            boolean downTrend = false;
+            if(daySeries.size() > 10) {
+                Ema dayEma = new Ema(10);
+                ArrayList<Double> ema = dayEma.getEma(daySeries);
+                double currDayEma = ema.get(ema.size()-1);
+                double prevDayEma = ema.get(ema.size()-2);
+                downTrend = (currDayEma - prevDayEma) < -0.005;
+            }
 
 			boolean crossedUp = prevEma10 < prevEma20 && currEma10 > currEma20;
 			boolean crossedDown = prevEma10 > prevEma20 && currEma10 < currEma20;
 			//boolean isUpTrend = currEma10 > currEma200 && prevEma20 > prevEma200;
 			if(state == 0) {
-                if(!isLastBar(bidTs.get(i).getStartDate()) && crossedDown) {
+                if(!isLastBar(bidTs.get(i).getStartDate()) && crossedDown && downTrend) {
                     double rangeHigh = high10.getRangeHigh(i);
 
                     this.stopPrice = rangeHigh + 0.0002;
