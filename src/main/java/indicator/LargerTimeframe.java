@@ -18,7 +18,7 @@ public class LargerTimeframe extends Indicator {
 	/**
 	 * Constructor
 	 *
-	 * @param n - number of bars to merge (e.g. n=3 means merge 3 bars into one)
+	 * @param timeframe - in minutes
 	 */
 	public LargerTimeframe(int timeframe) {
         this.curr = -1;

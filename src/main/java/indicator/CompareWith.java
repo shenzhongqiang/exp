@@ -18,6 +18,7 @@ public class CompareWith extends Indicator {
 	 * Constructor
 	 *
 	 * @param product - the specified product
+	 * @param historyFile - the history file
 	 */
 	public CompareWith(String product, File historyFile) {
 		this.curr = 0;
