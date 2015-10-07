@@ -13,43 +13,15 @@ def parse_file(filepath):
             continue
         parts = map(lambda x: x.replace('"', ''), parts)
         time = datetime.datetime.strptime(parts[0], "%Y-%m-%d %H:%M:%S")
-        data.append({"time": time, "close": parts[2]})
+        data.append({"time": time,
+            "open": float(parts[1]),
+            "close": float(parts[2]),
+            "high": float(parts[3]),
+            "low": float(parts[4])})
+    data.reverse()
     return data
 
-gold = parse_file("src/main/java/history/XAUUSDH1")
-silver = parse_file("src/main/java/history/XAGUSDH1")
+if __name__ == "__main__":
+    gold = parse_file("src/main/java/history/XAUUSDH1")
+    silver = parse_file("src/main/java/history/XAGUSDH1")
 
-gold.reverse()
-silver.reverse()
-
-results = []
-i = 0
-j = 0
-while(i < len(gold) and j < len(silver)):
-    if gold[i]["time"] < silver[j]["time"]:
-        i+=1
-    elif gold[i]["time"] == silver[j]["time"]:
-        results.append({"gold":gold[i],"silver":silver[j]})
-        i+=1
-        j+=1
-    else:
-        j+=1
-
-
-k = 1
-while(k < len(results)):
-    gprice = float(results[k]["gold"]["close"])
-    gchg = float(results[k]["gold"]["close"]) / float(results[k-1]["gold"]["close"]) - 1
-    sprice = float(results[k]["silver"]["close"])
-    schg = float(results[k]["silver"]["close"]) / float(results[k-1]["silver"]["close"]) - 1
-    ratio = gprice / sprice
-    diff = gchg - schg
-    print "%s,%s,%s,%f,%f,%f,%f" % (
-        results[k]["gold"]["time"],
-        results[k]["gold"]["close"],
-        results[k]["silver"]["close"],
-        abs(gchg),
-        abs(schg),
-        diff,
-        ratio)
-    k+=1

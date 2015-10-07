@@ -8,6 +8,7 @@ import main.java.indicator.*;
 import main.java.model.*;
 import main.java.subscriber.*;
 import main.java.order.Order;
+import main.java.product.*;
 
 /**
  * EMA Cross Strategy
@@ -75,15 +76,6 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 	public void Run(String product) {
 		int i = bidTs.size() - 1;
 
-
-		/*
-		System.out.println(String.format("close:%f, bid low:%f, high:%f, open:%f, ask high:%f",
-				bidTs.get(i).getClose(),
-				bidTs.get(i).getLow(),
-				bidTs.get(i).getHigh(),
-				bidTs.get(i).getOpen(),
-				askTs.get(i).getHigh()));
-		*/
 		// skip first 100 market data to give room for calculating indicators
 		if(i < 20) {
 			return;
@@ -142,25 +134,23 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
                     String entryTime = bidTs.get(i).getStart();
                     entryPrice = bid;
                     takeProfit = bid + r;
-                    unit = 2;
-                    this.positionId = order.MarketSell(product, entryTime, ask, unit);
-                    order.StopBuy(product, entryTime, stopPrice, unit);
+                    this.unit = this.getUnit(product, entryPrice, stopPrice);
+                    order.MarketSell(product, entryTime, ask, this.unit);
+                    order.StopBuy(product, entryTime, stopPrice, this.unit);
                     state = 1;
-                    //System.out.println(String.format("r:%f, rangeLow:%f, market buy %d at %f. SL at %f.", r, rangeLow, unit, ask, stopPrice));
                 }
 			}
 			else if(state == 1) {
 				double high = bidTs.get(i).getHigh();
                 double low = askTs.get(i).getLow();
 				String exitTime = bidTs.get(i).getStart();
-
                 if(isLastBar(bidTs.get(i).getStartDate())) {
-                    order.MarketBuy(product, exitTime, ask, 2);
+                    order.MarketBuy(product, exitTime, ask, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
                 }
                 else if(crossedUp) {
-                    order.MarketBuy(product, exitTime, ask, 2);
+                    order.MarketBuy(product, exitTime, ask, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
                 }
@@ -171,4 +161,13 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 			System.out.println(ex.getCause());
 		}
 	}
+
+    private int getUnit(String product, double entryPrice, double stopPrice) {
+        double r = Math.abs(entryPrice - stopPrice);
+        double point = CurrencyTable.getPoint(product);
+        double valuePerPoint = CurrencyTable.getValuePerPoint(product);
+        double balance = order.getAccount().getBalance();
+        int unit = (int) (0.01 * balance / valuePerPoint / (r/point));
+        return unit;
+    }
 }

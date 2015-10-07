@@ -124,10 +124,11 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 
 			boolean crossedUp = prevEma10 < prevEma20 && currEma10 > currEma20;
 			boolean crossedDown = prevEma10 > prevEma20 && currEma10 < currEma20;
+            boolean isTrending = this.isTrending(i);
 			//boolean isUpTrend = currEma10 > currEma200 && prevEma20 > prevEma200;
 			if(state == 0) {
                 if(!isLastBar(bidTs.get(i).getStartDate())) {
-                    if(crossedUp) {
+                    if(isTrending && crossedUp) {
                         double rangeLow = low10.getRangeLow(i);
 
                         this.stopPrice = rangeLow - 0.0002;
@@ -135,10 +136,7 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
                         String entryTime = askTs.get(i).getStart();
                         entryPrice = ask;
                         takeProfit = ask + r;
-                        double point = CurrencyTable.getPoint(product);
-                        double valuePerPoint = CurrencyTable.getValuePerPoint(product);
-                        double balance = order.getAccount().getBalance();
-                        this.unit = (int) (0.01 * balance / valuePerPoint / (r/point));
+                        this.unit = this.getUnit(product, this.entryPrice, this.stopPrice);
                         order.MarketBuy(product, entryTime, ask, this.unit);
                         order.StopSell(product, entryTime, stopPrice, this.unit);
                         state = 1;
@@ -165,4 +163,24 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 			System.out.println(ex.getCause());
 		}
 	}
+
+    private boolean isTrending(int i) {
+        for(int k=i-10; k<=i; k++) {
+            double high = this.bidTs.get(i).getHigh();
+            double low = this.bidTs.get(i).getLow();
+            if(high - low > 0.0010) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int getUnit(String product, double entryPrice, double stopPrice) {
+        double r = Math.abs(entryPrice - stopPrice);
+        double point = CurrencyTable.getPoint(product);
+        double valuePerPoint = CurrencyTable.getValuePerPoint(product);
+        double balance = order.getAccount().getBalance();
+        int unit = (int) (0.01 * balance / valuePerPoint / (r/point));
+        return unit;
+    }
 }

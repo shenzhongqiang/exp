@@ -57,7 +57,7 @@ public class MarketDataPusher {
 		}
 
 		if(this.start.compareTo(this.end) > 0) {
-			return;
+			throw new EndEarlierThanStart();
 		}
 
 		this.askBuffer = new ArrayList<MarketData>();
