@@ -7,5 +7,6 @@
         <dependency org="junit" name="junit" rev="4.11"/>
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.7.6"/>
         <dependency org="org.xerial" name="sqlite-jdbc" rev="3.7.2"/>
+        <dependency org="org.apache.commons" name="commons-math3" rev="3.5"/>
     </dependencies>
 </ivy-module>
