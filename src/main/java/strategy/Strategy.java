@@ -1,7 +1,7 @@
 package main.java.strategy;
 
 import java.util.*;
-
+import org.joda.time.*;
 import main.java.data.MarketData;
 import main.java.model.*;
 import main.java.order.Order;
@@ -13,11 +13,10 @@ public abstract class Strategy implements Subscriber {
 	protected ArrayList<MarketData> bidTs;
 
     public boolean isLastBar(Date time) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(time);
-        int day = cal.get(Calendar.DAY_OF_WEEK);
-        int hour = cal.get(Calendar.HOUR);
-        int minute = cal.get(Calendar.MINUTE);
+        DateTime dt = new DateTime(time);
+        int day = dt.getDayOfWeek();
+        int hour = dt.getHourOfDay();
+        int minute = dt.getMinuteOfHour();
         if(day == 6 && hour == 4 && minute >=55) {
             return true;
         }

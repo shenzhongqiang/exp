@@ -26,12 +26,13 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 	private double takeProfit = 0;
 	private double r = 0;
 	private int unit = 0;
+    private int count = 0;
 	private Ema ema10;
 	private Ema ema20;
 	private Ema ema200;
 	private RangeLow low10;
 	private RangeHigh high10;
-	private int positionId = 0;
+	private BollingerBand bb;
 
 	/**
 	 * Constructor
@@ -47,6 +48,7 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 		this.ema200 = new Ema(200);
 		this.low10 = new RangeLow(10);
 		this.high10 = new RangeHigh(10);
+        this.bb = new BollingerBand(20);
 	}
 
 	/**
@@ -65,6 +67,7 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 		ema200.Update(bid);
 		low10.Update(bid);
 		high10.Update(bid);
+		bb.Update(bid);
 		Run(product);
 	}
 
@@ -91,27 +94,21 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 			// get day of current bar. if it is Friday, close position before end of day.
 			String start = bidTs.get(i).getStart();
 			SimpleDateFormat ft = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			try {
-				Date dt = ft.parse(start);
-				Calendar cal = Calendar.getInstance();
-				cal.setTime(dt);
-				int day = cal.get(Calendar.DAY_OF_WEEK);
-				int hour = cal.get(Calendar.HOUR_OF_DAY);
-				int min = cal.get(Calendar.MINUTE);
-                /*
-				if(day == 6 && hour == 16 && min >= 54 && hasPosition) {
-					double bid = bidTs.get(i).getClose();
-					order.MarketSell(product, start, bid, unit, this.positionId);
-					order.CancelSellStopOrders(this.positionId);
-					System.out.println("Sell on friday at " + bid);
-					state = 0;
-				}
-                */
-			}
-			catch(ParseException e) {
-				System.out.println("Unable to parse date using " + ft);
-			}
-
+            Date dt = ft.parse(start);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(dt);
+            int day = cal.get(Calendar.DAY_OF_WEEK);
+            int hour = cal.get(Calendar.HOUR_OF_DAY);
+            int min = cal.get(Calendar.MINUTE);
+            /*
+            if(day == 6 && hour == 16 && min >= 54 && hasPosition) {
+                double bid = bidTs.get(i).getClose();
+                order.MarketSell(product, start, bid, unit, this.positionId);
+                order.CancelSellStopOrders(this.positionId);
+                System.out.println("Sell on friday at " + bid);
+                state = 0;
+            }
+            */
 
 			double prevEma10 = ema10.getEma(i-1);
 			double prevEma20 = ema20.getEma(i-1);
@@ -121,14 +118,18 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
 			double currEma200 = ema200.getEma(i);
 			double ask = askTs.get(i).getClose();
 			double bid = bidTs.get(i).getClose();
+            double currBBUpper = bb.getUpperBand(i);
+            double currBBLower = bb.getLowerBand(i);
+            double bbWidth = currBBUpper - currBBLower;
 
 			boolean crossedUp = prevEma10 < prevEma20 && currEma10 > currEma20;
+            System.out.format("%s %f < %f and %f > %f \n", bidTs.get(i).getStart(), prevEma10, prevEma20, currEma10, currEma20);
 			boolean crossedDown = prevEma10 > prevEma20 && currEma10 < currEma20;
-            boolean isTrending = this.isTrending(i);
-			//boolean isUpTrend = currEma10 > currEma200 && prevEma20 > prevEma200;
+			boolean isTrending = isTrending(i);
+
 			if(state == 0) {
                 if(!isLastBar(bidTs.get(i).getStartDate())) {
-                    if(isTrending && crossedUp) {
+                    if(crossedUp && isTrending) {
                         double rangeLow = low10.getRangeLow(i);
 
                         this.stopPrice = rangeLow - 0.0002;
@@ -137,9 +138,13 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
                         entryPrice = ask;
                         takeProfit = ask + r;
                         this.unit = this.getUnit(product, this.entryPrice, this.stopPrice);
-                        order.MarketBuy(product, entryTime, ask, this.unit);
-                        order.StopSell(product, entryTime, stopPrice, this.unit);
-                        state = 1;
+                        if(this.unit > 0) {
+                            order.MarketBuy(product, entryTime, ask, this.unit);
+                            order.StopSell(product, entryTime, stopPrice, this.unit);
+                            state = 1;
+                            double body = askTs.get(i).getClose() - askTs.get(i).getOpen();
+                            System.out.format("%s entry:%f,stopLoss:%f,r:%f,body:%f,%d\n", entryTime, entryPrice, stopPrice, r, body, unit);
+                        }
                     }
                 }
 			}
@@ -151,13 +156,30 @@ public class EmaCrossStrategyLong extends Strategy implements Subscriber {
                     order.MarketSell(product, exitTime, bid, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
+                    System.out.format("%s Friday close position at %f\n", exitTime, bid);
                 }
-				else if(crossedDown) {
+				else if(high >= this.takeProfit) {
+					order.CancelAllPendingOrders(product);
+                    order.StopSell(product, exitTime, this.entryPrice, this.unit);
+                    state = 2;
+                    System.out.format("%s ajust SL to %f\n", exitTime, entryPrice);
+				}
+			}
+            else if(state == 2) {
+                String exitTime = bidTs.get(i).getStart();
+                if(isLastBar(bidTs.get(i).getStartDate())) {
                     order.MarketSell(product, exitTime, bid, this.unit);
 					order.CancelAllPendingOrders(product);
                     state = 0;
-				}
-			}
+                    System.out.format("%s Friday close position at %f\n", exitTime, bid);
+                }
+                if(crossedDown) {
+                    order.MarketSell(product, exitTime, bid, this.unit);
+					order.CancelAllPendingOrders(product);
+                    state = 0;
+                    System.out.format("%s crossedDown, close position at %f\n", exitTime, bid);
+                }
+            }
 		}
 		catch(Exception ex) {
 			System.out.println(ex.getCause());

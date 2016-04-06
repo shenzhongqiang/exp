@@ -139,7 +139,7 @@ public class EmaCrossStrategyShort extends Strategy implements Subscriber {
 			boolean crossedDown = prevEma10 > prevEma20 && currEma10 < currEma20;
 			//boolean isUpTrend = currEma10 > currEma200 && prevEma20 > prevEma200;
 			if(state == 0) {
-                if(!isLastBar(bidTs.get(i).getStartDate()) && crossedDown && downTrend) {
+                if(!isLastBar(bidTs.get(i).getStartDate()) && crossedDown) {
                     double rangeHigh = high10.getRangeHigh(i);
 
                     this.stopPrice = rangeHigh + 0.0002;

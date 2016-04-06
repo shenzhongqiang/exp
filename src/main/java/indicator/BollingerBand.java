@@ -84,35 +84,5 @@ public class BollingerBand extends Indicator {
 		return middle.get(i);
 	}
 
-    /*
-     * Calculate EMA on arraylist of market data close prices
-     */
-    public ArrayList<Double> getEma(ArrayList<MarketData> md) {
-        if(this.n > md.size()) {
-            throw new NotEnoughMarketData();
-        }
-
-        double currEma = 0;
-        ArrayList<Double> ema = new ArrayList<Double>();
-        for(int i = 0; i < md.size(); i++) {
-            if(i < this.n - 1) {
-                ema.add(0.0);
-            }
-            else if(i == this.n - 1) {
-                double sum = 0;
-                for(int j = 0; j < this.n; j++) {
-                    sum += md.get(i).getClose();
-                }
-                currEma = sum / this.n;
-                ema.add(currEma);
-            }
-            else {
-                double k = (float) 2 / (n+1);
-                currEma = (md.get(i).getClose() - currEma) * k + currEma;
-                ema.add(currEma);
-            }
-        }
-        return ema;
-    }
 }
 

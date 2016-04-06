@@ -8,5 +8,6 @@
         <dependency org="org.slf4j" name="slf4j-log4j12" rev="1.7.6"/>
         <dependency org="org.xerial" name="sqlite-jdbc" rev="3.7.2"/>
         <dependency org="org.apache.commons" name="commons-math3" rev="3.5"/>
+        <dependency org="joda-time" name="joda-time" rev="2.8.2"/>
     </dependencies>
 </ivy-module>
