@@ -11,6 +11,7 @@ import com.fxcore2.*;
 public class Main {
 
     static SimpleDateFormat mDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    static TimeZone tz = TimeZone.getTimeZone("America/New_York");
 
     public static void main(String[] args) {
         O2GSession session = null;
@@ -115,6 +116,9 @@ public class Main {
 
     // Print history data from response
     public static void savePrices(O2GSession session, O2GResponse response, File historyFile) throws IOException {
+        // set timezone to EST
+        mDateFormat.setTimeZone(tz);
+
         System.out.println(String.format("Request with RequestID=%s is completed:", response.getRequestId()));
         O2GResponseReaderFactory factory = session.getResponseReaderFactory();
         if (factory != null) {
@@ -209,7 +213,7 @@ public class Main {
         if (dtFrom == null) {
             bIsDateFromNotSpecified = true;
         } else {
-            if(!dtFrom.before(Calendar.getInstance(TimeZone.getTimeZone("UTC")))) {
+            if(!dtFrom.before(Calendar.getInstance())) {
                 throw new Exception(String.format("\"DateFrom\" value %s is invalid", dtFrom));
             }
         }

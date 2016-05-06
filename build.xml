@@ -46,7 +46,7 @@
                 <pathelement path="lib/opencsv-2.3.jar" />
             </classpath>
             <jvmarg value="-Djava.library.path=lib${path.separator}lib/fxcore2.jar" />
-            <arg line="--instrument EUR/USD" />
+            <arg line="--instrument XAU/USD" />
             <!-- timeframe is one of below
                 t1
                 m1
@@ -64,7 +64,7 @@
                 M1
           -->
             <arg line="--timeframe m5" />
-            <arg line="--datefrom 2015-01-01" />
+            <arg line="--datefrom 2016-01-01" />
             <arg line="--dateto {DATETO}" />
             <arg line="--login D181913708001" />
             <arg line="--password 7217" />

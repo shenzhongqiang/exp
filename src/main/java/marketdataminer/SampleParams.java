@@ -2,6 +2,7 @@ package main.java.marketdataminer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 public class SampleParams {
     public static final String INSTRUMENT_NOT_SPECIFIED = "'Instrument' is not specified (/i|-i|/instrument|--instrument)";
@@ -177,6 +178,7 @@ public class SampleParams {
         }
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
         try {
+            mDateFrom.setTimeZone(TimeZone.getTimeZone("America/New_York"));
             mDateFrom.setTime(df.parse(sDateFrom));
         } catch (Exception ex) {
             mDateFrom = null;
